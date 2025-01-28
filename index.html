@@ -14,6 +14,10 @@
             margin-top: 25px;
         }
 
+        .pointer {
+            cursor: pointer;
+        }
+
 
     </style>
 
@@ -153,7 +157,7 @@
                         var uuid = generateUUID();
                         modalData[uuid] = itemsHTML.join('');
                         var formattedItemTag = formatDicomTag(item.tag);
-                        output.push('<p onclick="openModal(`'+ uuid +'`)">SEQ #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
+                        output.push('<p class="pointer" onclick="openModal(`'+ uuid +'`)">SEQ #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
                     });
                 }
                 else if (element.fragments) {
