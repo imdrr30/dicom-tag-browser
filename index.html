@@ -77,6 +77,8 @@
 
     var modalData = {};
 
+    var myModal = new bootstrap.Modal(document.getElementById('myModal'));
+
 
     function generateUUID() {
         return crypto.randomUUID();
@@ -223,11 +225,9 @@
     }
 
     openModal = function(uuid) {
-        var modal = document.getElementById('myModal');
+        myModal.hide();
         var modalContent = document.getElementById('modalContent');
         modalContent.innerHTML = modalData[uuid];
-        const myModal = new bootstrap.Modal(modal);
-
         // Open the modal
         myModal.show();
     }
