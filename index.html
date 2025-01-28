@@ -16,6 +16,7 @@
 
         .pointer {
             cursor: pointer;
+            color: blue;
         }
 
 
@@ -114,7 +115,7 @@
     function dumpDataSet(dataSet, output) {
         
         try {
-            output.push(`<table class="table">
+            output.push(`<table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Tag</th>
@@ -126,6 +127,9 @@
                 </thead>
                 <tbody>`)
             for (var propertyName in dataSet.elements) {
+                if(propertyName === 'xfffee00d') {
+                    continue;
+                }
                 var text = "<tr>"
                 var element = dataSet.elements[propertyName];
 
