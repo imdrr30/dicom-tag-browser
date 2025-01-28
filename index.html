@@ -239,6 +239,7 @@
         document.getElementById('dropZone').innerHTML = '';
         $('#status').removeClass('alert-warning alert-success alert-danger').addClass('alert-info');
         $('#warnings').empty();
+        modalData = {};
         document.getElementById('statusText').innerHTML = 'Status: Loading file, please wait..';
 
         var reader = new FileReader();
