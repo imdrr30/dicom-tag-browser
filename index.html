@@ -8,11 +8,12 @@
     <style>
 
         #dropZone {
-            height: 90vh;
+            height: 86vh;
             width: 100%;
             background-color: #F0F0F0;
             overflow: auto;
             margin-top: 25px;
+            border-radius: 10px;
         }
 
         .pointer {
@@ -26,18 +27,12 @@
 </head>
 <body>
 <div class="container">
-
-    <div class="page-header mt-5">
-        <h3>DICOM Inspector</h3>
-    </div>
     <div class="row">
         <div class="col-md-4">
-            <div style="width:350px;height:350px;margin-top:30%;color: white;display:inline-block;"
-                 oncontextmenu="return false"
-                 class='disable-selection noIbar'
-                 unselectable='on'
-                 onselectstart='return false;'
-                 onmousedown='return false;'>
+            <div style="margin-top: 15%;" class="heading mx-3">
+                <h3>DICOM Inspector</h3>
+            </div>
+            <div style="width:350px;height:350px;margin-top:30%;color: white;display:inline-block;" oncontextmenu="return false" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
                 <div id="dicomImage"
                      style="width:350px;height:350px">
                 </div>
@@ -52,7 +47,6 @@
                 <div class="col-md-12">
                     <div id="dropZone">
                         <div class="text-center" style="margin-top:225px;"><h3>Drag DICOM file here</h3></div>
-    
                     </div>
                 </div>
             </div>
@@ -385,9 +379,10 @@
     }
 
     // Setup the dnd listeners.
-    var dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', handleDragOver, false);
-    dropZone.addEventListener('drop', handleFileSelect, false);
+    var body = document.getElementsByTagName('body')[0];
+    body.addEventListener('dragover', handleDragOver, false);
+    body.addEventListener('drop', handleFileSelect, false);
+
 
 
 </script>
