@@ -57,7 +57,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Sequence View</h5>
+          <h5 id="modal-title" class="modal-title">Sequence View</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -157,10 +157,16 @@
                         
                         var itemsHTML = [];
                         dumpDataSet(item.dataSet, itemsHTML);
-                        
-                        var uuid = generateUUID();
-                        modalData[uuid] = itemsHTML.join('');
                         var formattedItemTag = formatDicomTag(item.tag);
+
+                        var uuid = generateUUID();
+                        modalData[uuid] = {
+                            html: itemsHTML.join(''),
+                            originalTagData: tagData,
+                            baseTagData: formattedItemTag,
+                            itemNumber: itemNumber
+                        };
+                        
                         output.push('<p class="pointer" onclick="openModal(`'+ uuid +'`)">SEQ #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
                     });
                 }
@@ -234,7 +240,9 @@
 
     openModal = function(uuid) {
         var modalContent = document.getElementById('modalContent');
-        modalContent.innerHTML = modalData[uuid];
+        var sequenceContent = modalData[uuid];
+        modalContent.innerHTML = sequenceContent.html;
+        $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.baseTagData[0]}`;
         // Open the modal
         myModal.show();
     }
