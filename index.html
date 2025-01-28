@@ -109,7 +109,7 @@
         const group = cleanedTag.slice(0, 4).toUpperCase();
         const element = cleanedTag.slice(4).toUpperCase();
         const tagFormatted = `(${group},${element})`;
-        return [tagFormatted, DicomTags[tagFormatted]]
+        return [tagFormatted, DicomTags[tagFormatted] ?? 'Private Tag'];
     }
     function dumpDataSet(dataSet, output) {
         
