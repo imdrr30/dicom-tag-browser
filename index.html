@@ -153,7 +153,7 @@
                         var uuid = generateUUID();
                         modalData[uuid] = itemsHTML.join('');
                         var formattedItemTag = formatDicomTag(item.tag);
-                        output.push('<p onclick="openModal(`'+ uuid +'`)">Item #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
+                        output.push('<p onclick="openModal(`'+ uuid +'`)">SEQ #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
                     });
                 }
                 else if (element.fragments) {
