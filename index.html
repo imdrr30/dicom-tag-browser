@@ -48,6 +48,19 @@
     </div>
 
 </div>
+<div class="modal fade" id="myModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Sequence View</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="modalContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 <script src="/js/DicomTags.js"></script>
@@ -60,6 +73,13 @@
 
     function isASCII(str) {
         return /^[\x00-\x7F]*$/.test(str);
+    }
+
+    var modalData = {};
+
+
+    function generateUUID() {
+        return crypto.randomUUID();
     }
 
     function performSearch(value){
@@ -124,8 +144,14 @@
                     output.push(text);
                     var itemNumber = 0;
                     element.items.forEach(function (item) {
-                        output.push('Item #' + itemNumber++ + ' ' + item.tag)
-                        //dumpDataSet(item.dataSet, output);
+                        
+                        var itemsHTML = [];
+                        dumpDataSet(item.dataSet, itemsHTML);
+                        
+                        var uuid = generateUUID();
+                        modalData[uuid] = itemsHTML.join('');
+                        var formattedItemTag = formatDicomTag(item.tag);
+                        output.push('<p onclick="openModal(`'+ uuid +'`)">Item #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
                     });
                 }
                 else if (element.fragments) {
@@ -194,6 +220,16 @@
             }
             throw ex;
         }
+    }
+
+    openModal = function(uuid) {
+        var modal = document.getElementById('myModal');
+        var modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = modalData[uuid];
+        const myModal = new bootstrap.Modal(modal);
+
+        // Open the modal
+        myModal.show();
     }
 
     // This function will read the file into memory and then start dumping it
