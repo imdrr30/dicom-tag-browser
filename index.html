@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
+    <title>DICOM Tag Browser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
@@ -242,7 +243,7 @@
         var modalContent = document.getElementById('modalContent');
         var sequenceContent = modalData[uuid];
         modalContent.innerHTML = sequenceContent.html;
-        $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.baseTagData[0]}`;
+        $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.originalTagData.join(" - ")}`;
         // Open the modal
         myModal.show();
     }
