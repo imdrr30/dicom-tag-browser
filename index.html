@@ -235,14 +235,15 @@
                         var stringIsAscii = isASCII(str);
 
                         if (stringIsAscii) {
-                            if (str !== undefined && !numberPresent) {
+                            if (str !== undefined) {
                                 text += '"' + str + '"';
+                                if (tagData[0] === "(0020,0013)") {
+                                    metaDetails.instanceNumber = str;
+                                }
                             }
                         }
 
-                        if (tagData[0] === "(0020,0013)") {
-                            metaDetails.instanceNumber = str;
-                        }
+                        
                         else {
                             if (element.length !== 2 && element.length !== 4) {
                                 color = '#C8C8C8';
