@@ -78,9 +78,7 @@ async function handleFileSelect(evt) {
 
 }
 
-// This function will read the file into memory and then start dumping it
 async function dumpFile(file) {
-    // Clear any data currently being displayed
     modalData = {};
 
     // Create a promise to read the file
