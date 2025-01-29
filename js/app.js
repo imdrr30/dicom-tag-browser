@@ -78,7 +78,7 @@ async function handleFileSelect(evt) {
     }
     
     for (let file of files) {
-        let metaDetails = await dumpFile(file);
+        let metaDetails = await dumpFile(file, false);
         let frames = parseInt(metaDetails.frames);
         let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
         
@@ -149,7 +149,7 @@ function filterDetails(tag, value, metaDetails){
 }
 
 
-async function dumpFile(file) {
+async function dumpFile(file, writeHtml=true) {
     modalData = {};
     clipboardHistory = {};
 
@@ -175,8 +175,10 @@ async function dumpFile(file) {
 
     dumpDataSet(dataSet, output, metaDetails);
 
-    document.getElementById('dropZone').innerHTML = output.join('');
-    showCopyIcon();
+    if(writeHtml){
+        document.getElementById('dropZone').innerHTML = output.join('');
+        showCopyIcon();
+    }
     return metaDetails;
 }
 
