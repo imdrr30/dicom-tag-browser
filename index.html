@@ -123,6 +123,9 @@
 
     function performSearch(value){
         var table = document.querySelector('tbody');
+        if(!table){
+            return;
+        }
         var tr = table.getElementsByTagName('tr');
         for (const row of tr) {
             const td = row.getElementsByTagName('td');
