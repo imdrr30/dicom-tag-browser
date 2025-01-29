@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <title>DICOM Tag Browser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,10 +10,7 @@
         #dropZone {
             height: 86vh;
             width: 100%;
-            background-color: #F0F0F0;
             overflow: auto;
-            margin-top: 25px;
-            border-radius: 10px;
         }
 
         .pointer {
@@ -21,40 +18,42 @@
             color: blue;
         }
 
+        #fileInput{
+            width: 95%;
+        }
+
 
     </style>
 
 </head>
 <body>
-<div class="container">
+<div class="mx-2">
     <div class="row">
         <div class="col-md-4">
-            <div style="margin-top: 15%;" class="heading mx-3">
+            <div style="margin-top: 10%;" class="heading mx-5">
                 <h3>DICOM Inspector</h3>
             </div>
-            <div style="width:350px;height:350px;margin-top:30%;color: white;display:inline-block;" oncontextmenu="return false" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
-                <div id="dicomImage"
-                     style="width:350px;height:350px">
-                </div>
+            <div style="width:100%;height:70%; margin-left:2%; margin-top:12%;color: white;display:inline-block;" oncontextmenu="return false" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+                <div id="dicomImage" style="width:100%;height:80%"></div>
             </div>
-            <div id="slider-div" style="display: none;" class="row mt-5">
-                <div class="col-md-1" id="currentSlice">1</div>
-                <div class="col-md-9">
-                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" style="width: 300px;" />
+            <div id="slider-div" style="display: none;" class="row mx-3">
+                <div class="col-md-1 ml-5" id="currentSlice">1</div>
+                <div class="col-md-10">
+                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" />
                 </div>
                 
                 <div class="col-md-1" id="totalSlice">1</div>
             </div>
         </div>
         <div class="col-md-8">
-            <div class="row mt-3">
+            <div class="row mt-5">
                 <input type="text" id="fileInput" class="form-control" onkeydown="performSearch(this.value)" placeholder="Search Tags..." />
             </div>
     
             <div class="row">
                 <div class="col-md-12">
                     <div id="dropZone">
-                        <div class="text-center" style="margin-top:225px;"><h3>Drag DICOM file here</h3></div>
+                        <div style="margin-top:225px;"><h3>Drag DICOM file here</h3></div>
                     </div>
                 </div>
             </div>
