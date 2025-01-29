@@ -221,22 +221,16 @@
                 }
                 else {
                     if (element.length < 128) {
-                        var numberPresent = false;
                         var numberValue = 0;
                         if (element.length === 2) {
                             numberValue = dataSet.uint16(propertyName);
-                            text += numberValue;
-                            numberPresent = true;
+                            //text += numberValue;
                         }
                         else if (element.length === 4) {
                             numberValue = dataSet.uint32(propertyName);
-                            text += numberValue;
-                            numberPresent = true;
+                            //text += numberValue;
                         }
 
-                        if (tagData[0] === "(0020,0013)") {
-                            metaDetails.instanceNumber = numberValue;
-                        }
                         var str = dataSet.string(propertyName);
                         var stringIsAscii = isASCII(str);
 
@@ -244,6 +238,10 @@
                             if (str !== undefined && !numberPresent) {
                                 text += '"' + str + '"';
                             }
+                        }
+
+                        if (tagData[0] === "(0020,0013)") {
+                            metaDetails.instanceNumber = str;
                         }
                         else {
                             if (element.length !== 2 && element.length !== 4) {
