@@ -13,6 +13,16 @@
             overflow: auto;
         }
 
+        #dicomInfo{
+            position: absolute;
+        }
+
+        #dicomInfo p{
+            color: white;
+            font-size: 14px;
+            height: 3px;
+        }
+
         .pointer {
             cursor: pointer;
             color: #00c2ff;
@@ -47,6 +57,7 @@
                 <h3>DICOM Inspector</h3>
             </div>
             <div style="width:100%;height:70%; margin-left:2%; margin-top:12%;color: white;display:inline-block;" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+                <div id="dicomInfo"></div>
                 <div id="dicomImage" style="width:100%;height:80%"></div>
             </div>
             <div id="slider-div" style="display: none;" class="row mx-3">
@@ -182,7 +193,8 @@
                     element.items.forEach(function (item) {
                         
                         var itemsHTML = [];
-                        dumpDataSet(item.dataSet, itemsHTML);
+                        let newMetaDetails = {};
+                        dumpDataSet(item.dataSet, itemsHTML, newMetaDetails);
                         var formattedItemTag = formatDicomTag(item.tag);
 
                         var uuid = generateUUID();
@@ -232,12 +244,7 @@
                                     text += ' - ';
                                 }
                                 text += '"' + str + '"';
-                                if (tagData[0] === "(0020,0013)") {
-                                    metaDetails.instanceNumber = str;
-                                }
-                                if (tagData[0] === "(0028,0008)") {
-                                    metaDetails.frames = str;
-                                }
+                                filterDetails(tagData[0], str, metaDetails);
                             }
                         }
 
@@ -287,7 +294,7 @@
 
     async function setImage(index){
         let image = images[index]
-        loadAndViewImage(image.wadouri);
+        loadAndViewImage(image);
         await dumpFile(image.file);
     }
 
