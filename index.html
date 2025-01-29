@@ -37,6 +37,14 @@
                      style="width:350px;height:350px">
                 </div>
             </div>
+            <div id="slider-div" style="display: none;" class="row mt-5">
+                <div class="col-md-1" id="currentSlice">1</div>
+                <div class="col-md-9">
+                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" style="width: 300px;" />
+                </div>
+                
+                <div class="col-md-1" id="totalSlice">1</div>
+            </div>
         </div>
         <div class="col-md-8">
             <div class="row mt-3">
@@ -99,11 +107,15 @@
     }
 
     var modalData = {};
+    var images = [];
 
     var myModal = new bootstrap.Modal(document.getElementById('myModal'));
     var dicomImage = document.getElementById('dicomImage');
     cornerstone.enable(dicomImage);
     var loaded = false;
+    var totalSliceElement = $("#totalSlice")[0]
+    var currentSliceElement = $("#currentSlice")[0]
+    var imageSlider = $($("#dicomSlice")[0])
 
 
     function generateUUID() {
@@ -133,7 +145,8 @@
         const tagFormatted = `(${group},${element})`;
         return [tagFormatted, DicomTags[tagFormatted] ?? 'Private Tag'];
     }
-    function dumpDataSet(dataSet, output) {
+
+    function dumpDataSet(dataSet, output, metaDetails) {
         
         try {
             output.push(`<table class="table table-striped">
@@ -209,13 +222,20 @@
                 else {
                     if (element.length < 128) {
                         var numberPresent = false;
+                        var numberValue = 0;
                         if (element.length === 2) {
-                            text += dataSet.uint16(propertyName);
+                            numberValue = dataSet.uint16(propertyName);
+                            text += numberValue;
                             numberPresent = true;
                         }
                         else if (element.length === 4) {
-                            text += dataSet.uint32(propertyName);
+                            numberValue = dataSet.uint32(propertyName);
+                            text += numberValue;
                             numberPresent = true;
+                        }
+
+                        if (tagData[0] === "(0020,0013)") {
+                            metaDetails.instanceNumber = numberValue;
                         }
                         var str = dataSet.string(propertyName);
                         var stringIsAscii = isASCII(str);
@@ -268,120 +288,30 @@
         myModal.show();
     }
 
-    // This function will read the file into memory and then start dumping it
-    function dumpFile(file)
-    {
-        // clear any data currently being displayed as we parse this next file
-        document.getElementById('dropZone').innerHTML = '';
-        $('#status').removeClass('alert-warning alert-success alert-danger').addClass('alert-info');
-        $('#warnings').empty();
-        modalData = {};
-        document.getElementById('statusText').innerHTML = 'Status: Loading file, please wait..';
-
-        var reader = new FileReader();
-        reader.onload = function(file) {
-            var arrayBuffer = reader.result;
-            // Here we have the file data as an ArrayBuffer.  dicomParser requires as input a
-            // Uint8Array so we create that here
-            var byteArray = new Uint8Array(arrayBuffer);
-            var kb = byteArray.length / 1024;
-            var mb = kb / 1024;
-            var byteStr = mb > 1 ? mb.toFixed(3) + " MB" : kb.toFixed(0) + " KB";
-            document.getElementById('statusText').innerHTML = 'Status: Parsing ' + byteStr + ' bytes, please wait..';
-            // set a short timeout to do the parse so the DOM has time to update itself with the above message
-            setTimeout(function() {
-
-                // Invoke the paresDicom function and get back a DataSet object with the contents
-                var dataSet;
-                try {
-                    var start = new Date().getTime();
-                    dataSet = dicomParser.parseDicom(byteArray);
-                    // Here we call dumpDataSet to recursively iterate through the DataSet and create an array
-                    // of strings of the contents.
-                    var output = [];
-                    dumpDataSet(dataSet, output);
-
-                    // Combine the array of strings into one string and add it to the DOM
-                    document.getElementById('dropZone').innerHTML =  output.join('');
-
-                    var end = new Date().getTime();
-                    var time = end - start;
-                    if(dataSet.warnings.length > 0)
-                    {
-                        $('#status').removeClass('alert-success alert-info alert-danger').addClass('alert-warning');
-                        $('#statusText').html('Status: Warnings encountered while parsing file (file of size '+ byteStr + ' parsed in ' + time + 'ms)');
-
-                        dataSet.warnings.forEach(function(warning) {
-                            $("#warnings").append('<li>' + warning +'</li>');
-                        });
-                    }
-                    else
-                    {
-                        var pixelData = dataSet.elements.x7fe00010;
-                        if(pixelData) {
-                            $('#status').removeClass('alert-warning alert-info alert-danger').addClass('alert-success');
-                            $('#statusText').html('Status: Ready (file of size '+ byteStr + ' parsed in ' + time + 'ms)');
-                        }
-                        else
-                        {
-                            $('#status').removeClass('alert-warning alert-info alert-danger').addClass('alert-success');
-                            $('#statusText').html('Status: Ready - no pixel data found (file of size ' + byteStr + ' parsed in ' + time + 'ms)');
-                        }
-                    }
-
-
-                }
-                catch(err)
-                {
-                    var message = err;
-                    if(err.exception) {
-                        message = err.exception;
-                    }
-
-                    $('#status').removeClass('alert-success alert-info alert-warning').addClass('alert-danger');
-                    document.getElementById('statusText').innerHTML = 'Status: Error - ' + message + ' (file of size ' + byteStr + ' )';
-                    if(err.output) {
-                        document.getElementById('dropZone').innerHTML = output.join('');
-                    }
-                    else if(err.dataSet) {
-                        var output = [];
-                        dumpDataSet(err.dataSet, output);
-                        document.getElementById('dropZone').innerHTML = output.join('');
-                    }
-                }
-            },10);
-        };
-
-        reader.readAsArrayBuffer(file);
+    async function setImage(index){
+        let image = images[index]
+        loadAndViewImage(image.wadouri);
+        await dumpFile(image.file);
     }
 
+    window.onload = function(){
+        // Setup the dnd listeners.
+        var body = document.getElementsByTagName('body')[0];
+        body.addEventListener('dragover', handleDragOver, false);
+        body.addEventListener('drop', handleFileSelect, false);
 
-    // this function gets called once the user drops the file onto the div
-    function handleFileSelect(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
 
-        // Get the FileList object that contains the list of files that were dropped
-        var files = evt.dataTransfer.files;
+        imageSlider.on("input", async (event)=>{
+            let value = event.target.value;
+            currentSliceElement.innerHTML = value;
 
-        // this UI is only built for a single file so just dump the first one
-        let file = files[0];
-        dumpFile(file);
-        const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
-        loadAndViewImage(imageId);
+            let newIndex = value - 1;
+            await setImage(newIndex);
 
+        })
     }
 
-    function handleDragOver(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-    }
-
-    // Setup the dnd listeners.
-    var body = document.getElementsByTagName('body')[0];
-    body.addEventListener('dragover', handleDragOver, false);
-    body.addEventListener('drop', handleFileSelect, false);
+    
 
 
 
