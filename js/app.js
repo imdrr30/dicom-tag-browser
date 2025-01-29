@@ -66,10 +66,8 @@ async function handleFileSelect(evt) {
         for (let item of items) {
             if (item.kind === "file") {
                 let entry = item.webkitGetAsEntry();
-                if (entry.isFile) {
-                    files.push(item.getAsFile());
-                } else if (entry.isDirectory) {
-                    files = files.concat(await readDirectory(entry));
+                if (entry) {
+                    files = files.concat(await traverseFileTree(entry));
                 }
             }
         }
@@ -81,12 +79,12 @@ async function handleFileSelect(evt) {
         let metaDetails = await dumpFile(file, false);
         let frames = parseInt(metaDetails.frames);
         let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
-
-        if(!(metaDetails.seriesId in images)){
+        
+        if (!(metaDetails.seriesId in images)) {
             images[metaDetails.seriesId] = [];
         }
-
-        if(currentSeries==""){
+        
+        if (currentSeries === "") {
             currentSeries = metaDetails.seriesId;
         }
         
@@ -107,6 +105,28 @@ async function handleFileSelect(evt) {
     
     loadSeries(currentSeries);
     refreshSeries();
+}
+
+async function traverseFileTree(entry) {
+    let files = [];
+    if (entry.isFile) {
+        files.push(await getFile(entry));
+    } else if (entry.isDirectory) {
+        let reader = entry.createReader();
+        let entries = await new Promise((resolve, reject) => {
+            reader.readEntries(resolve, reject);
+        });
+        for (let subEntry of entries) {
+            files = files.concat(await traverseFileTree(subEntry));
+        }
+    }
+    return files;
+}
+
+async function getFile(fileEntry) {
+    return new Promise((resolve, reject) => {
+        fileEntry.file(resolve, reject);
+    });
 }
 
 
@@ -141,38 +161,6 @@ function loadSeries(seriesId){
     }else{
         $($("#slider-div")[0]).attr("style", "display: none;");
     }
-}
-
-async function readDirectory(directoryEntry) {
-    let reader = directoryEntry.createReader();
-    let files = [];
-    
-    async function readEntries() {
-        return new Promise((resolve, reject) => {
-            reader.readEntries(async (entries) => {
-                if (entries.length === 0) {
-                    resolve(files);
-                    return;
-                }
-                for (let entry of entries) {
-                    if (entry.isFile) {
-                        files.push(await getFile(entry));
-                    } else if (entry.isDirectory) {
-                        files = files.concat(await readDirectory(entry));
-                    }
-                }
-                resolve(await readEntries());
-            }, reject);
-        });
-    }
-    
-    return readEntries();
-}
-
-async function getFile(fileEntry) {
-    return new Promise((resolve, reject) => {
-        fileEntry.file(resolve, reject);
-    });
 }
 
 
