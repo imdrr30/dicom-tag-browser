@@ -24,7 +24,7 @@ function loadAndViewImage(imageId) {
         }
         
     }, function(err) {
-        alert(err);
+        console.log(err);
     });
 }
 
@@ -47,14 +47,18 @@ async function handleFileSelect(evt) {
     // this UI is only built for a single file so just dump the first one
 
     for(let file of files){
-        let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
         let metaDetails = await dumpFile(file);
-        images.push({
-            file: file,
-            wadouri: wadouri,
-            metaDetails: metaDetails,
-            instanceNumber: parseInt(metaDetails.instanceNumber),
-        });
+        let frames = parseInt(metaDetails.frames);
+        let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
+        for(let i=0; i<frames; i++){
+            let frameWadouri = wadouri+"?frame="+i;
+            images.push({
+                file: file,
+                wadouri: frameWadouri,
+                metaDetails: metaDetails,
+                instanceNumber: parseInt(metaDetails.instanceNumber)+i,
+            });
+        }
         
     }
 
@@ -96,6 +100,7 @@ async function dumpFile(file) {
         studyId: null,
         PatientName: null,
         PatientAge: null,
+        frames: "1"
     }
     dumpDataSet(dataSet, output, metaDetails);
 

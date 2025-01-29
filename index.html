@@ -242,6 +242,9 @@
                                 if (tagData[0] === "(0020,0013)") {
                                     metaDetails.instanceNumber = str;
                                 }
+                                if (tagData[0] === "(0028,0008)") {
+                                    metaDetails.frames = str;
+                                }
                             }
                         }
 
