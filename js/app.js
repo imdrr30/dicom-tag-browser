@@ -103,7 +103,50 @@ async function dumpFile(file) {
 
     // Combine the output into a single string and update the DOM
     document.getElementById('dropZone').innerHTML = output.join('');
+    showCopyIcon();
     return metaDetails;
+}
+
+function generateUUID() {
+    return crypto.randomUUID();
+}
+
+function performSearch(value){
+    var table = document.querySelector('tbody');
+    if(!table){
+        return;
+    }
+    var tr = table.getElementsByTagName('tr');
+    for (const row of tr) {
+        const td = row.getElementsByTagName('td');
+        let found = false;
+        for (const cell of td) {
+            if (cell.innerHTML.toUpperCase().indexOf(value.toUpperCase()) > -1) {
+                found = true;
+                break;
+            }
+        }
+        row.style.display = found ? '' : 'none';
+    }
+}
+
+function copyToClipboard(uuid){
+    const dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = clipboardHistory[uuid];
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
+}
+
+function showCopyIcon(){
+    $("td[show='copy']").each(function(){
+        let content = $(this).html();
+        let uuid = generateUUID();
+        clipboardHistory[uuid]= content;
+        $(this).html(content + " <i class=\"bi bi-copy\" onclick=\"copyToClipboard(`"+uuid+"`)\"></i>");
+        $(this).attr("show", "copied");
+    })
 }
 
 // Helper function that returns a Promise for FileReader

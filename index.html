@@ -22,6 +22,19 @@
             width: 95%;
         }
 
+        td i{
+            display: none;
+        }
+
+        td:hover i{
+            display: inline;
+        }
+
+        td[show="copied"] i:hover{
+            cursor: pointer;
+            color: #00c2ff;
+        }
+
 
     </style>
 
@@ -33,7 +46,7 @@
             <div style="margin-top: 10%;" class="heading mx-5">
                 <h3>DICOM Inspector</h3>
             </div>
-            <div style="width:100%;height:70%; margin-left:2%; margin-top:12%;color: white;display:inline-block;" oncontextmenu="return false" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+            <div style="width:100%;height:70%; margin-left:2%; margin-top:12%;color: white;display:inline-block;" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
                 <div id="dicomImage" style="width:100%;height:80%"></div>
             </div>
             <div id="slider-div" style="display: none;" class="row mx-3">
@@ -53,7 +66,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div id="dropZone">
-                        <div style="margin-top:225px;margin-left: 10%;"><h3><i class="bi bi-download"></i>   Drag DICOM file here</h3></div>
+                        <div style="margin-top:225px;margin-left: 10%;  user-select: none;"><h3><i class="bi bi-download"></i>   Drag DICOM file here</h3></div>
                     </div>
                 </div>
             </div>
@@ -107,6 +120,7 @@
 
     var modalData = {};
     var images = [];
+    var clipboardHistory = {};
 
     var myModal = new bootstrap.Modal(document.getElementById('myModal'));
     var dicomImage = document.getElementById('dicomImage');
@@ -115,30 +129,6 @@
     var totalSliceElement = $("#totalSlice")[0]
     var currentSliceElement = $("#currentSlice")[0]
     var imageSlider = $($("#dicomSlice")[0])
-
-
-    function generateUUID() {
-        return crypto.randomUUID();
-    }
-
-    function performSearch(value){
-        var table = document.querySelector('tbody');
-        if(!table){
-            return;
-        }
-        var tr = table.getElementsByTagName('tr');
-        for (const row of tr) {
-            const td = row.getElementsByTagName('td');
-            let found = false;
-            for (const cell of td) {
-                if (cell.innerHTML.toUpperCase().indexOf(value.toUpperCase()) > -1) {
-                    found = true;
-                    break;
-                }
-            }
-            row.style.display = found ? '' : 'none';
-        }
-    }
 
     function formatDicomTag(tag) {
         const cleanedTag = tag.startsWith('x') ? tag.slice(1) : tag;
@@ -171,8 +161,8 @@
 
                 var tagData = formatDicomTag(element.tag);
 
-                text += "<td>" + tagData[0] + "</td>";
-                text += "<td>" + tagData[1] + "</td>";
+                text += "<td show='copy'>" + tagData[0] + "</td>";
+                text += "<td show='copy'>" + tagData[1] + "</td>";
 
                 if (element.hadUndefinedLength) {
                     text += "<td>(-1)</td>";
@@ -185,7 +175,7 @@
                 }
 
                 var color = 'black';
-                text += "<td>"
+                text += "<td show='copy'>"
                 if (element.items) {
                     output.push(text);
                     var itemNumber = 0;
@@ -269,7 +259,7 @@
                         text += "data too long to show";
                     }
 
-                    output.push('<p style="color:' + color + ';">' + text + '</p>');
+                    output.push(text);
 
                 }
                 text += "</td>"
@@ -291,7 +281,7 @@
         var sequenceContent = modalData[uuid];
         modalContent.innerHTML = sequenceContent.html;
         $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.originalTagData.join(" - ")}`;
-        // Open the modal
+        showCopyIcon();
         myModal.show();
     }
 
