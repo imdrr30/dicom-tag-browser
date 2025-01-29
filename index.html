@@ -224,11 +224,11 @@
                         var numberValue = 0;
                         if (element.length === 2) {
                             numberValue = dataSet.uint16(propertyName);
-                            //text += numberValue;
+                            text += numberValue;
                         }
                         else if (element.length === 4) {
                             numberValue = dataSet.uint32(propertyName);
-                            //text += numberValue;
+                            text += numberValue;
                         }
 
                         var str = dataSet.string(propertyName);
@@ -236,6 +236,9 @@
 
                         if (stringIsAscii) {
                             if (str !== undefined) {
+                                if(numberValue !== 0) {
+                                    text += ' - ';
+                                }
                                 text += '"' + str + '"';
                                 if (tagData[0] === "(0020,0013)") {
                                     metaDetails.instanceNumber = str;
