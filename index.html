@@ -56,7 +56,12 @@
             <div style="margin-top: 10%;" class="heading mx-5">
                 <h3>DICOM Inspector</h3>
             </div>
-            <div style="width:100%;height:70%; margin-left:2%; margin-top:12%;color: white;display:inline-block;" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+            <div class="mx-5" style="margin-top: 5%;">
+                <select id="seriesSelect" onchange="setNewSeries(this.value)" class="form-select">
+
+                </select>
+            </div>
+            <div style="width:100%;height:65%; margin-left:2%; margin-top:6%;color: white;display:inline-block;" class='disable-selection noIbar' unselectable='on' onselectstart='return false;' onmousedown='return false;'>
                 <div id="dicomInfo"></div>
                 <div id="dicomImage" style="width:100%;height:80%"></div>
             </div>
@@ -130,7 +135,8 @@
     }
 
     var modalData = {};
-    var images = [];
+    var images = {};
+    var currentSeries = "";
     var clipboardHistory = {};
 
     var myModal = new bootstrap.Modal(document.getElementById('myModal'));
@@ -293,7 +299,7 @@
     }
 
     async function setImage(index){
-        let image = images[index]
+        let image = images[currentSeries][index]
         loadAndViewImage(image);
         await dumpFile(image.file);
     }

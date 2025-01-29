@@ -81,10 +81,18 @@ async function handleFileSelect(evt) {
         let metaDetails = await dumpFile(file, false);
         let frames = parseInt(metaDetails.frames);
         let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
+
+        if(!(metaDetails.seriesId in images)){
+            images[metaDetails.seriesId] = [];
+        }
+
+        if(currentSeries==""){
+            currentSeries = metaDetails.seriesId;
+        }
         
         for (let i = 0; i < frames; i++) {
             let frameWadouri = `${wadouri}?frame=${i}`;
-            images.push({
+            images[metaDetails.seriesId].push({
                 file: file,
                 wadouri: frameWadouri,
                 metaDetails: metaDetails,
@@ -93,19 +101,45 @@ async function handleFileSelect(evt) {
         }
     }
     
-    images.sort((a, b) => a.instanceNumber - b.instanceNumber);
-    
-    if (!loaded && images.length > 0) {
-        dumpFile(images[0].file);
-        loadAndViewImage(images[0]);
+    for (let series in images) {
+        images[series].sort((a, b) => a.instanceNumber - b.instanceNumber);
     }
     
-    let totalLength = images.length;
+    loadSeries(currentSeries);
+    refreshSeries();
+}
+
+
+function refreshSeries(){
+    let selectElement = $("#seriesSelect")[0]
+    selectElement.innerHTML = "";
+    let newHtml = "";
+    for (let series in images) {
+        newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${series}</option>`;
+    }
+    selectElement.innerHTML = newHtml;
+}
+
+function setNewSeries(seriesId){
+    currentSeries = seriesId;
+    loadSeries(seriesId);
+}
+
+function loadSeries(seriesId){
+    if (images[seriesId].length > 0) {
+        dumpFile(images[seriesId][0].file);
+        loadAndViewImage(images[seriesId][0]);
+    }
+    
+    let totalLength = images[seriesId].length;
     totalSliceElement.innerHTML = totalLength;
     imageSlider.attr("max", totalLength);
+    imageSlider.attr("value", "1");
     
-    if (images.length > 1) {
+    if (images[seriesId].length > 1) {
         $($("#slider-div")[0]).attr("style", false);
+    }else{
+        $($("#slider-div")[0]).attr("style", "display: none;");
     }
 }
 
