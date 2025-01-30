@@ -517,6 +517,7 @@ window.onload = function(){
         let selectedIndex = seriesSelect.selectedIndex;
         switch (e.keyCode) {
             case 38:
+                seriesSelect.blur();
                 if(selectedIndex > 0){
                     seriesSelect.selectedIndex = selectedIndex - 1;
                     setNewSeries(seriesSelect.value);
@@ -524,18 +525,21 @@ window.onload = function(){
                 break;
             case 40:
                 // down arrow
+                seriesSelect.blur();
                 if(selectedIndex < seriesSelect.length - 1){
                     seriesSelect.selectedIndex = selectedIndex + 1;
                     setNewSeries(seriesSelect.value);
                 }
                 break;
             case 37:
+                seriesSelect.blur();
                 if(parseInt(imageSlider.val()) > 1){
                     imageSlider.val(parseInt(imageSlider[0].value) - 1);
                     onSliderChange("input");
                 }
                 break;
             case 39:
+                seriesSelect.blur();
                 if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
                     imageSlider.val(parseInt(imageSlider[0].value) + 1);
                     onSliderChange("input");
