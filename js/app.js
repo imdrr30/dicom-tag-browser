@@ -207,15 +207,30 @@ async function traverseFileTree(entry) {
         files.push(await getFile(entry));
     } else if (entry.isDirectory) {
         let reader = entry.createReader();
-        let entries = await new Promise((resolve, reject) => {
-            reader.readEntries(resolve, reject);
-        });
+        let entries = [];
+
+        // Read all entries in batches (fixes 100-file limit)
+        let readEntries = async () => {
+            let batch = await new Promise((resolve, reject) => {
+                reader.readEntries(resolve, reject);
+            });
+
+            if (batch.length > 0) {
+                entries = entries.concat(batch);
+                await readEntries(); // Recursively read until empty batch
+            }
+        };
+
+        await readEntries(); // Start recursive reading
+
+        // Recursively process each entry
         for (let subEntry of entries) {
             files = files.concat(await traverseFileTree(subEntry));
         }
     }
     return files;
 }
+
 
 async function getFile(fileEntry) {
     return new Promise((resolve, reject) => {
