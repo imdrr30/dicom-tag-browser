@@ -503,9 +503,9 @@ window.onload = function(){
     // dicomImage on mousewheel call sliderLeft or SliderRight
     dicomImage.addEventListener('wheel', function(e){
         if(e.deltaY > 0){
-            sliderLeft();
-        }else{
             SliderRight();
+        }else{
+            sliderLeft();
         }
     });
 
