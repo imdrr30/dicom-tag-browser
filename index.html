@@ -361,6 +361,28 @@
                 SliderRight();
             }
         });
+
+
+        // document on arrow up or down pressed change series from select series and trigger change event
+        document.onkeydown = function(e) {
+            let seriesSelect = $("#seriesSelect")[0];
+            let selectedIndex = seriesSelect.selectedIndex;
+            switch (e.keyCode) {
+                case 38:
+                    if(selectedIndex > 0){
+                        seriesSelect.selectedIndex = selectedIndex - 1;
+                        setNewSeries(seriesSelect.value);
+                    }
+                    break;
+                case 40:
+                    // down arrow
+                    if(selectedIndex < seriesSelect.length - 1){
+                        seriesSelect.selectedIndex = selectedIndex + 1;
+                        setNewSeries(seriesSelect.value);
+                    }
+                    break;
+            }
+        };
         
     }
 
