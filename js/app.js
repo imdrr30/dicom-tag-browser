@@ -176,7 +176,7 @@ function refreshSeries(){
     selectElement.innerHTML = "";
     let newHtml = "";
     for (let series in images) {
-        newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${series}</option>`;
+        newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${images[series][0].metaDetails.seriesDescription} - ${series}</option>`;
     }
     selectElement.innerHTML = newHtml;
 }
