@@ -127,6 +127,7 @@ function showNotification(message){
 async function handleFileSelect(evt) {
     evt.stopPropagation();
     evt.preventDefault();
+    const start = performance.now();
     showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`);
     
     let items = evt.dataTransfer.items;
@@ -169,7 +170,8 @@ async function handleFileSelect(evt) {
 
     loadSeries(currentSeries);
     refreshSeries();
-    showNotification(`Files loaded successfully`);
+    const end = performance.now();
+    showNotification(`Files loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
 }
 
 async function processFile(file) {
