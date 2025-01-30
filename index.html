@@ -312,6 +312,20 @@
         await setImage(newIndex);
     }
 
+    function sliderLeft(){
+        if(parseInt(imageSlider.val()) > 1){
+            imageSlider.val(parseInt(imageSlider[0].value) - 1);
+            onSliderChange("input");
+        }
+    }
+
+    function SliderRight(){
+        if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
+            imageSlider.val(parseInt(imageSlider[0].value) + 1);
+            onSliderChange("input");
+        }
+    }
+
     window.onload = function(){
         // Setup the dnd listeners.
         var body = document.getElementsByTagName('body')[0];
@@ -338,6 +352,16 @@
                     break;
             }
         };
+
+        // dicomImage on mousewheel call sliderLeft or SliderRight
+        dicomImage.addEventListener('wheel', function(e){
+            if(e.deltaY > 0){
+                sliderLeft();
+            }else{
+                SliderRight();
+            }
+        });
+        
     }
 
     
