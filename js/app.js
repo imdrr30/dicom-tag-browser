@@ -154,6 +154,7 @@ function setNewSeries(seriesId){
 }
 
 function loadSeries(seriesId){
+
     if (images[seriesId].length > 0) {
         dumpFile(images[seriesId][0].file);
         loadAndViewImage(images[seriesId][0]);
@@ -170,6 +171,8 @@ function loadSeries(seriesId){
     }else{
         $($("#slider-div")[0]).attr("style", "display: none;");
     }
+
+    $($("#seriesSelect")[0]).attr("style", "");
 }
 
 
