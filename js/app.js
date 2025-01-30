@@ -417,12 +417,8 @@ function performSearch(value){
 }
 
 function copyToClipboard(uuid){
-    const dummy = document.createElement("textarea");
-    document.body.appendChild(dummy);
-    dummy.value = clipboardHistory[uuid];
-    dummy.select();
-    document.execCommand("copy");
-    document.body.removeChild(dummy);
+    let value = clipboardHistory[uuid];
+    navigator.clipboard.writeText(value);
 }
 
 function showCopyIcon(){
