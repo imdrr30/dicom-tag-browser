@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
+    <link href="/css/select2.min.css" rel="stylesheet" />
     <style>
 
         #dropZone {
@@ -62,6 +63,24 @@
             color: white;display:inline-block;
         }
 
+        .select2-container--default .select2-selection--single {
+            background-color: var(--bs-body-bg) !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered{
+            color: white !important;
+        }
+
+
+        .select2-dropdown{
+            background-color: var(--bs-body-bg) !important;
+        }
+
+        .select2-container--default .select2-results__option--selected{
+            background-color: var(--bs-primary) !important;
+            color: white !important;
+        }
+
 
     </style>
 
@@ -74,7 +93,7 @@
                 <h3>DICOM Inspector</h3>
             </div>
             <div class="mx-5" style="margin-top: 5%;">
-                <select id="seriesSelect" onchange="setNewSeries(this.value)" style="display: none;" class="form-select">
+                <select id="seriesSelect" onchange="setNewSeries(this.value)" style="display: none; width: 100%;" class="form-select">
 
                 </select>
             </div>
@@ -107,15 +126,6 @@
         
     </div>
 
-    <div id="status" style="display: none;" class="alert alert-success">
-        <div id="statusText">
-            Status: Ready (no file loaded)
-        </div>
-        <ul id="warnings">
-
-        </ul>
-    </div>
-
 </div>
 <div class="modal fade" id="myModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
@@ -145,6 +155,7 @@
 
 <script src="/js/DicomTags.js"></script>
 <script src="js/jquery-3.7.1.min.js"></script>
+<script src="/js/select2.min.js"></script>
 <script src="/js/hammer.js"></script>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/dicomParser.min.js"></script>

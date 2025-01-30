@@ -127,7 +127,8 @@ function showNotification(message){
 async function handleFileSelect(evt) {
     evt.stopPropagation();
     evt.preventDefault();
-    const start = performance.now();
+    let start = performance.now();
+    let currentNoOfSeries = Object.keys(images).length;
     showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`);
     
     let items = evt.dataTransfer.items;
@@ -170,8 +171,8 @@ async function handleFileSelect(evt) {
 
     loadSeries(currentSeries);
     refreshSeries();
-    const end = performance.now();
-    showNotification(`Files loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
+    let end = performance.now();
+    showNotification(`${Object.keys(images).length-currentNoOfSeries} series loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
 }
 
 async function processFile(file) {
@@ -261,6 +262,9 @@ function loadSeries(seriesId){
     if (images[seriesId].length > 0) {
         let currentSlicePosition = seriesSlicePosition[seriesId];
         dumpFile(images[seriesId][currentSlicePosition].file);
+        if(!loaded){
+            $('#seriesSelect').select2();
+        }
         loadAndViewImage(images[seriesId][currentSlicePosition]);
         let totalLength = images[seriesId].length;
         totalSliceElement.innerHTML = totalLength;
@@ -647,7 +651,6 @@ window.onload = function(){
     body.addEventListener('dragover', handleDragOver, false);
     body.addEventListener('drop', handleFileSelect, false);
 
-
     imageSlider.on("input", onSliderChange);
 
     // dicomImage on mousewheel call sliderLeft or SliderRight
@@ -662,28 +665,33 @@ window.onload = function(){
 
     // document on arrow up or down pressed change series from select series and trigger change event
     document.onkeydown = function(e) {
-        let seriesSelect = $("#seriesSelect")[0];
-        let selectedIndex = seriesSelect.selectedIndex;
+        let seriesSelect = $("#seriesSelect"); // Select2 element
+    
+        let options = seriesSelect.find("option");
+        let selectedIndex = options.index(options.filter(":selected"));
+    
         switch (e.key) {
-            case 'ArrowUp':
-                seriesSelect.blur();
+            case 'ArrowUp': // Move up in the dropdown
+                seriesSelect.select2("close"); // Close the Select2 dropdown
                 imageSlider.blur();
-                if(selectedIndex > 0){
-                    seriesSelect.selectedIndex = selectedIndex - 1;
-                    setNewSeries(seriesSelect.value);
+                if (selectedIndex > 0) {
+                    let newValue = options.eq(selectedIndex - 1).val();
+                    seriesSelect.val(newValue).trigger("change");
+                    setNewSeries(newValue);
                 }
                 break;
-            case 'ArrowDown':
-                // down arrow
-                seriesSelect.blur();
+    
+            case 'ArrowDown': // Move down in the dropdown
+                seriesSelect.select2("close");
                 imageSlider.blur();
-                if(selectedIndex < seriesSelect.length - 1){
-                    seriesSelect.selectedIndex = selectedIndex + 1;
-                    setNewSeries(seriesSelect.value);
+                if (selectedIndex < options.length - 1) {
+                    let newValue = options.eq(selectedIndex + 1).val();
+                    seriesSelect.val(newValue).trigger("change");
+                    setNewSeries(newValue);
                 }
                 break;
             case 'ArrowLeft':
-                seriesSelect.blur();
+                console.log("left arrow");
                 imageSlider.blur();
                 if(parseInt(imageSlider.val()) > 1){
                     imageSlider.val(parseInt(imageSlider[0].value) - 1);
@@ -691,7 +699,6 @@ window.onload = function(){
                 }
                 break;
             case 'ArrowRight':
-                seriesSelect.blur();
                 imageSlider.blur();
                 if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
                     imageSlider.val(parseInt(imageSlider[0].value) + 1);
