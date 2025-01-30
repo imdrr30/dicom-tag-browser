@@ -162,7 +162,7 @@ function loadSeries(seriesId){
     let totalLength = images[seriesId].length;
     totalSliceElement.innerHTML = totalLength;
     imageSlider.attr("max", totalLength);
-    imageSlider.attr("value", "1");
+    imageSlider.val("1");
     
     if (images[seriesId].length > 1) {
         $($("#slider-div")[0]).attr("style", false);
