@@ -41,7 +41,7 @@ function isASCII(str) {
 function sha1(byteArray, position, length) {
     position = position || 0;
     length = length || byteArray.length;
-    var subArray = dicomParser.sharedCopy(byteArray, position, length);
+    let subArray = dicomParser.sharedCopy(byteArray, position, length);
     return rusha.digest(subArray);
 }
 
@@ -49,12 +49,12 @@ function sha1Text(byteArray, position, length) {
     if(showSHA1 === false) {
         return "";
     }
-    var text = "; SHA1 " + sha1(byteArray, position, length);
+    let text = "; SHA1 " + sha1(byteArray, position, length);
     return text;
 }
 
 function mapUid(str) {
-    var uid = uids[str];
+    let uid = uids[str];
     if(uid) {
         return ' [ ' + uid + ' ]';
     }
@@ -66,7 +66,7 @@ function escapeSpecialCharacters(str) {
 }
 
 function dataDownloadLink(element, text) {
-    var linkText = "<a class='dataDownload' href='#' data-tag='" + element.tag + "'";
+    let linkText = "<a class='dataDownload' href='#' data-tag='" + element.tag + "'";
         linkText += " data-dataOffset='" + element.dataOffset + "'";
         linkText += " data-length='" + element.length + "'";
         linkText += ">" + text + "</a>";
@@ -416,8 +416,8 @@ function dumpDataSet(dataSet, output, metaDetails) {
                         // Next we ask the dataset to give us the element's data in string form.  Most elements are
                         // strings but some aren't so we do a quick check to make sure it actually has all ascii
                         // characters so we know it is reasonable to display it.
-                        var str = dataSet.string(propertyName);
-                        var stringIsAscii = isASCII(str);
+                        let str = dataSet.string(propertyName);
+                        let stringIsAscii = isASCII(str);
 
                         if (stringIsAscii) {
                             // the string will be undefined if the element is present but has no data
@@ -428,20 +428,19 @@ function dumpDataSet(dataSet, output, metaDetails) {
                                 text += '"' + escapeSpecialCharacters(str) + '"' + mapUid(str);
                             }
                         }
-                        else {
-                            if (element.length !== 2 && element.length !== 4) {
-                                // If it is some other length and we have no string
-                                text += "binary data";
-                            }
+                        else if (element.length !== 2 && element.length !== 4) {
+                            // If it is some other length and we have no string
+                            text += "binary data";
                         }
+                        
                     }
                     else {
                         if (isStringVr(vr)) {
                             // Next we ask the dataset to give us the element's data in string form.  Most elements are
                             // strings but some aren't so we do a quick check to make sure it actually has all ascii
                             // characters so we know it is reasonable to display it.
-                            var str = dataSet.string(propertyName);
-                            var stringIsAscii = isASCII(str);
+                            let str = dataSet.string(propertyName);
+                            let stringIsAscii = isASCII(str);
 
                             if (stringIsAscii) {
                                 // the string will be undefined if the element is present but has no data
@@ -456,7 +455,6 @@ function dumpDataSet(dataSet, output, metaDetails) {
                             }
                             else {
                                 if (element.length !== 2 && element.length !== 4) {
-                                    color = '#C8C8C8';
                                     // If it is some other length and we have no string
                                     text += "binary data";
                                 }
@@ -464,42 +462,41 @@ function dumpDataSet(dataSet, output, metaDetails) {
                         }
                         else if (vr === 'US') {
                             text += dataSet.uint16(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/2; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/2; i++) {
                                 text += '\\' + dataSet.uint16(propertyName, i);
                             }
                         }
                         else if (vr === 'SS') {
                             text += dataSet.int16(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/2; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/2; i++) {
                                 text += '\\' + dataSet.int16(propertyName, i);
                             }
                         }
                         else if (vr === 'UL') {
                             text += dataSet.uint32(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/4; i++) {
                                 text += '\\' + dataSet.uint32(propertyName, i);
                             }
                         }
                         else if (vr === 'SL') {
                             text += dataSet.int32(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/4; i++) {
                                 text += '\\' + dataSet.int32(propertyName, i);
                             }
                         }
                         else if (vr == 'FD') {
                             text += dataSet.double(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/8; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/8; i++) {
                                 text += '\\' + dataSet.double(propertyName, i);
                             }
                         }
                         else if (vr == 'FL') {
                             text += dataSet.float(propertyName);
-                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                            for(let i=1; i < dataSet.elements[propertyName].length/4; i++) {
                                 text += '\\' + dataSet.float(propertyName, i);
                             }
                         }
                         else if (vr === 'OB' || vr === 'OW' || vr === 'UN' || vr === 'OF' || vr === 'UT') {
-                            color = '#C8C8C8';
                             // If it is some other length and we have no string
                             if(element.length === 2) {
                                 text += dataDownloadLink(element, "binary data") + " of length " + element.length + " as uint16: " +dataSet.uint16(propertyName);
