@@ -2,6 +2,28 @@ cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 cornerstoneTools.external.cornerstone = cornerstone;
 cornerstoneTools.init();
+function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
+
+let modalData = {};
+let images = {};
+let currentSeries = "";
+let clipboardHistory = {};
+
+let myModal = new bootstrap.Modal(document.getElementById('myModal'));
+let dicomImage = document.getElementById('dicomImage');
+cornerstone.enable(dicomImage);
+let loaded = false;
+let totalSliceElement = $("#totalSlice")[0]
+let currentSliceElement = $("#currentSlice")[0]
+let imageSlider = $($("#dicomSlice")[0])
+const toastLiveExample = document.getElementById('liveToast')
+const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+const toastMessage = document.getElementById('toast-body')
+
+
+
 const TAG_DETAILS_MAPPING = {
     "(0020,0013)": "instanceNumber",
     "(0020,000D)": "studyId",
@@ -60,6 +82,7 @@ function handleDragOver(evt) {
 async function handleFileSelect(evt) {
     evt.stopPropagation();
     evt.preventDefault();
+    showNotification(`<div class="spinner-border text-secondary" role="status"></div><span class="m-3">Loading files. Please wait...</span>`);
     
     let items = evt.dataTransfer.items;
     let files = [];
@@ -113,6 +136,13 @@ async function handleFileSelect(evt) {
     
     loadSeries(currentSeries);
     refreshSeries();
+    showNotification("Files loaded successfully");
+    
+}
+
+function showNotification(message){
+    toastMessage.innerHTML = message;
+    toastBootstrap.show();
 }
 
 async function traverseFileTree(entry) {
@@ -217,6 +247,149 @@ async function dumpFile(file, writeHtml=true) {
     return metaDetails;
 }
 
+function dumpDataSet(dataSet, output, metaDetails) {
+        
+    try {
+        output.push(`<table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tag</th>
+                    <th>Name</th>
+                    <th>Length</th>
+                    <th>VR</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>`)
+        for (var propertyName in dataSet.elements) {
+            if(propertyName === 'xfffee00d') {
+                continue;
+            }
+            var text = "<tr>"
+            var element = dataSet.elements[propertyName];
+
+            var tagData = formatDicomTag(element.tag);
+
+            text += "<td show='copy'>" + tagData[0] + "</td>";
+            text += "<td show='copy'>" + tagData[1] + "</td>";
+
+            if (element.hadUndefinedLength) {
+                text += "<td>(-1)</td>";
+            }else{
+                text += "<td>" + element.length + "</td>";
+            }
+
+            if (element.vr) {
+                text += "<td>" + element.vr + "</td>";
+            }
+
+            var color = 'black';
+            text += "<td show='copy'>"
+            if (element.items) {
+                output.push(text);
+                var itemNumber = 0;
+                element.items.forEach(function (item) {
+                    
+                    var itemsHTML = [];
+                    let newMetaDetails = {};
+                    dumpDataSet(item.dataSet, itemsHTML, newMetaDetails);
+                    var formattedItemTag = formatDicomTag(item.tag);
+
+                    var uuid = generateUUID();
+                    modalData[uuid] = {
+                        html: itemsHTML.join(''),
+                        originalTagData: tagData,
+                        baseTagData: formattedItemTag,
+                        itemNumber: itemNumber
+                    };
+                    
+                    output.push('<p class="pointer" onclick="openModal(`'+ uuid +'`)">SEQ #' + itemNumber++ + ' ' + `${formattedItemTag[0]}` + '</p>')
+                });
+            }
+            else if (element.fragments) {
+                output.push('' + text);
+                var itemNumber = 0;
+                element.fragments.forEach(function (fragment) {
+                    var basicOffset;
+                    if(element.basicOffsetTable) {
+                        basicOffset = element.basicOffsetTable[itemNumber];
+                    }
+
+                    var str = 'Fragment #' + itemNumber++ + ' offset = ' + fragment.offset;
+                    str += '(' + basicOffset + ')';
+                    str += '; length = ' + fragment.length + '';
+                    output.push(str);
+                });
+            }
+            else {
+                if (element.length < 128) {
+                    var numberValue = 0;
+                    if (element.length === 2) {
+                        numberValue = dataSet.uint16(propertyName);
+                        text += numberValue;
+                    }
+                    else if (element.length === 4) {
+                        numberValue = dataSet.uint32(propertyName);
+                        text += numberValue;
+                    }
+
+                    var str = dataSet.string(propertyName);
+                    var stringIsAscii = isASCII(str);
+
+                    if (stringIsAscii) {
+                        if (str !== undefined) {
+                            if(numberValue !== 0) {
+                                text += ' - ';
+                            }
+                            text += '"' + str + '"';
+                            filterDetails(tagData[0], str, metaDetails);
+                        }
+                    }
+
+                    
+                    else {
+                        if (element.length !== 2 && element.length !== 4) {
+                            color = '#C8C8C8';
+                            text += "binary data";
+                        }
+                    }
+
+                    if (element.length === 0) {
+                        color = '#C8C8C8';
+                    }
+
+                }
+                else {
+                    color = '#C8C8C8';
+                    text += "data too long to show";
+                }
+
+                output.push(text);
+
+            }
+            text += "</td>"
+            text += "</tr>"
+        }
+
+        output.push('</tbody></table>')
+    } catch(err) {
+        var ex = {
+            exception: err,
+            output: output
+        }
+        throw ex;
+    }
+}
+
+function formatDicomTag(tag) {
+    const cleanedTag = tag.startsWith('x') ? tag.slice(1) : tag;
+    const group = cleanedTag.slice(0, 4).toUpperCase();
+    const element = cleanedTag.slice(4).toUpperCase();
+    const tagFormatted = `(${group},${element})`;
+    return [tagFormatted, DicomTags[tagFormatted] ?? 'Private Tag'];
+}
+
+
 function generateUUID() {
     return crypto.randomUUID();
 }
@@ -276,3 +449,96 @@ function readFile(file) {
     });
 }
 
+openModal = function(uuid) {
+    var modalContent = document.getElementById('modalContent');
+    var sequenceContent = modalData[uuid];
+    modalContent.innerHTML = sequenceContent.html;
+    $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.originalTagData.join(" - ")}`;
+    showCopyIcon();
+    myModal.show();
+}
+
+async function setImage(index){
+    let image = images[currentSeries][index]
+    loadAndViewImage(image);
+    await dumpFile(image.file);
+}
+
+async function onSliderChange(event){
+    let value = imageSlider.val();
+    currentSliceElement.innerHTML = value;
+
+    let newIndex = value - 1;
+    await setImage(newIndex);
+}
+
+function sliderLeft(){
+    if(parseInt(imageSlider.val()) > 1){
+        imageSlider.val(parseInt(imageSlider[0].value) - 1);
+        onSliderChange("input");
+    }
+}
+
+function SliderRight(){
+    if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
+        imageSlider.val(parseInt(imageSlider[0].value) + 1);
+        onSliderChange("input");
+    }
+}
+
+
+
+
+window.onload = function(){
+    // Setup the dnd listeners.
+    var body = document.getElementsByTagName('body')[0];
+    body.addEventListener('dragover', handleDragOver, false);
+    body.addEventListener('drop', handleFileSelect, false);
+
+
+    imageSlider.on("input", onSliderChange);
+
+    // dicomImage on mousewheel call sliderLeft or SliderRight
+    dicomImage.addEventListener('wheel', function(e){
+        if(e.deltaY > 0){
+            sliderLeft();
+        }else{
+            SliderRight();
+        }
+    });
+
+
+    // document on arrow up or down pressed change series from select series and trigger change event
+    document.onkeydown = function(e) {
+        let seriesSelect = $("#seriesSelect")[0];
+        let selectedIndex = seriesSelect.selectedIndex;
+        switch (e.keyCode) {
+            case 38:
+                if(selectedIndex > 0){
+                    seriesSelect.selectedIndex = selectedIndex - 1;
+                    setNewSeries(seriesSelect.value);
+                }
+                break;
+            case 40:
+                // down arrow
+                if(selectedIndex < seriesSelect.length - 1){
+                    seriesSelect.selectedIndex = selectedIndex + 1;
+                    setNewSeries(seriesSelect.value);
+                }
+                break;
+            case 37:
+                if(parseInt(imageSlider.val()) > 1){
+                    imageSlider.val(parseInt(imageSlider[0].value) - 1);
+                    onSliderChange("input");
+                }
+                break;
+            case 39:
+                if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
+                    imageSlider.val(parseInt(imageSlider[0].value) + 1);
+                    onSliderChange("input");
+                }
+                break;
+        }
+    };
+    
+}
