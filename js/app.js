@@ -66,6 +66,8 @@ function loadAndViewImage(imageData) {
             enableTool('Zoom', 4);
             loaded = true;
         }
+
+        performSearch($("#searchInput")[0].value);
         
     }, function(err) {
         console.log(err);
