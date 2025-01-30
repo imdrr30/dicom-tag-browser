@@ -2,15 +2,13 @@ cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 cornerstoneTools.external.cornerstone = cornerstone;
 cornerstoneTools.init();
-function isASCII(str) {
-    return /^[\x00-\x7F]*$/.test(str);
-}
 
 let modalData = {};
 let images = {};
 let currentSeries = "";
 let clipboardHistory = {};
 let seriesSlicePosition = {};
+let showSHA1 = false;
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let dicomImage = document.getElementById('dicomImage');
@@ -34,6 +32,45 @@ const TAG_DETAILS_MAPPING = {
     "(0008,1090)": "manufacturer",
     "(0028,0008)": "frames",
     "(0008,103E)": "seriesDescription"
+}
+
+function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
+
+function sha1(byteArray, position, length) {
+    position = position || 0;
+    length = length || byteArray.length;
+    var subArray = dicomParser.sharedCopy(byteArray, position, length);
+    return rusha.digest(subArray);
+}
+
+function sha1Text(byteArray, position, length) {
+    if(showSHA1 === false) {
+        return "";
+    }
+    var text = "; SHA1 " + sha1(byteArray, position, length);
+    return text;
+}
+
+function mapUid(str) {
+    var uid = uids[str];
+    if(uid) {
+        return ' [ ' + uid + ' ]';
+    }
+    return '';
+}
+
+function escapeSpecialCharacters(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function dataDownloadLink(element, text) {
+    var linkText = "<a class='dataDownload' href='#' data-tag='" + element.tag + "'";
+        linkText += " data-dataOffset='" + element.dataOffset + "'";
+        linkText += " data-length='" + element.length + "'";
+        linkText += ">" + text + "</a>";
+    return linkText;
 }
 
 
@@ -160,7 +197,7 @@ async function processFile(file) {
             });
         }
     } catch (e) {
-        console.error("Error processing file:", e);
+        console.log("Error processing file:");
     }
 }
 
@@ -266,6 +303,10 @@ async function dumpFile(file, writeHtml=true) {
     return metaDetails;
 }
 
+function isStringVr(vr) {
+    return !['AT', 'FL', 'FD', 'OB', 'OF', 'OW', 'SI', 'SQ', 'SS', 'UL', 'US'].includes(vr);
+}
+
 function dumpDataSet(dataSet, output, metaDetails) {
         
     try {
@@ -340,36 +381,126 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 });
             }
             else {
+                let vr = element.vr;
                 if (element.length < 128) {
-                    let numberValue = 0;
-                    if (element.length === 2) {
-                        numberValue = dataSet.uint16(propertyName);
-                        text += numberValue;
-                    }
-                    else if (element.length === 4) {
-                        numberValue = dataSet.uint32(propertyName);
-                        text += numberValue;
-                    }
-
-                    let str = dataSet.string(propertyName);
-                    let stringIsAscii = isASCII(str);
-
-                    if (stringIsAscii) {
-                        if (str !== undefined) {
-                            if(numberValue !== 0) {
-                                text += ' - ';
-                            }
-                            text += '"' + str + '"';
-                            filterDetails(tagData[0], str, metaDetails);
+                    if (element.vr === undefined && tag === undefined) {
+                        if (element.length === 2) {
+                            text += dataSet.uint16(propertyName);
                         }
-                    }else if (element.length !== 2 && element.length !== 4) {
-                            text += "binary data";
-                    }
-                    
+                        else if (element.length === 4) {
+                            text += dataSet.uint32(propertyName);
+                        }
 
+
+                        // Next we ask the dataset to give us the element's data in string form.  Most elements are
+                        // strings but some aren't so we do a quick check to make sure it actually has all ascii
+                        // characters so we know it is reasonable to display it.
+                        var str = dataSet.string(propertyName);
+                        var stringIsAscii = isASCII(str);
+
+                        if (stringIsAscii) {
+                            // the string will be undefined if the element is present but has no data
+                            // (i.e. attribute is of type 2 or 3 ) so we only display the string if it has
+                            // data.  Note that the length of the element will be 0 to indicate "no data"
+                            // so we don't put anything here for the value in that case.
+                            if (str !== undefined) {
+                                text += '"' + escapeSpecialCharacters(str) + '"' + mapUid(str);
+                            }
+                        }
+                        else {
+                            if (element.length !== 2 && element.length !== 4) {
+                                // If it is some other length and we have no string
+                                text += "binary data";
+                            }
+                        }
+                    }
+                    else {
+                        if (isStringVr(vr)) {
+                            // Next we ask the dataset to give us the element's data in string form.  Most elements are
+                            // strings but some aren't so we do a quick check to make sure it actually has all ascii
+                            // characters so we know it is reasonable to display it.
+                            var str = dataSet.string(propertyName);
+                            var stringIsAscii = isASCII(str);
+
+                            if (stringIsAscii) {
+                                // the string will be undefined if the element is present but has no data
+                                // (i.e. attribute is of type 2 or 3 ) so we only display the string if it has
+                                // data.  Note that the length of the element will be 0 to indicate "no data"
+                                // so we don't put anything here for the value in that case.
+                                if (str !== undefined) {
+                                    text += '"' + escapeSpecialCharacters(str) + '"' + mapUid(str);
+                                }
+
+                                filterDetails(tagData[0], str, metaDetails);
+                            }
+                            else {
+                                if (element.length !== 2 && element.length !== 4) {
+                                    color = '#C8C8C8';
+                                    // If it is some other length and we have no string
+                                    text += "binary data";
+                                }
+                            }
+                        }
+                        else if (vr === 'US') {
+                            text += dataSet.uint16(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/2; i++) {
+                                text += '\\' + dataSet.uint16(propertyName, i);
+                            }
+                        }
+                        else if (vr === 'SS') {
+                            text += dataSet.int16(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/2; i++) {
+                                text += '\\' + dataSet.int16(propertyName, i);
+                            }
+                        }
+                        else if (vr === 'UL') {
+                            text += dataSet.uint32(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                                text += '\\' + dataSet.uint32(propertyName, i);
+                            }
+                        }
+                        else if (vr === 'SL') {
+                            text += dataSet.int32(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                                text += '\\' + dataSet.int32(propertyName, i);
+                            }
+                        }
+                        else if (vr == 'FD') {
+                            text += dataSet.double(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/8; i++) {
+                                text += '\\' + dataSet.double(propertyName, i);
+                            }
+                        }
+                        else if (vr == 'FL') {
+                            text += dataSet.float(propertyName);
+                            for(var i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                                text += '\\' + dataSet.float(propertyName, i);
+                            }
+                        }
+                        else if (vr === 'OB' || vr === 'OW' || vr === 'UN' || vr === 'OF' || vr === 'UT') {
+                            color = '#C8C8C8';
+                            // If it is some other length and we have no string
+                            if(element.length === 2) {
+                                text += dataDownloadLink(element, "binary data") + " of length " + element.length + " as uint16: " +dataSet.uint16(propertyName);
+                            } else if(element.length === 4) {
+                                text += dataDownloadLink(element, "binary data") + " of length " + element.length + " as uint32: " +dataSet.uint32(propertyName);
+                            } else {
+                                text += dataDownloadLink(element, "binary data") + " of length " + element.length + " and VR " + vr ;
+                            }
+                        }
+                        else if(vr === 'AT') {
+                            let group = dataSet.uint16(propertyName, 0);
+                            let groupHexStr = ("0000" + group.toString(16)).substr(-4);
+                            let atElement = dataSet.uint16(propertyName, 1);
+                            let elementHexStr = ("0000" + atElement.toString(16)).substr(-4);
+                            text += "x" + groupHexStr + elementHexStr;
+                        }
+                    }
                 }
                 else {
-                    text += "data too long to show";
+                    text += dataDownloadLink(element, "data");
+                    text += " of length " + element.length + " for VR " + vr + " too long to show";
+                    text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
                 }
 
                 output.push(text);
