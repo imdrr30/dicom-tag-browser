@@ -335,24 +335,6 @@
 
         imageSlider.on("input", onSliderChange);
 
-        // On arrow left or right change imageSlider value
-        document.onkeydown = function(e) {
-            switch (e.keyCode) {
-                case 37:
-                    if(parseInt(imageSlider.val()) > 1){
-                        imageSlider.val(parseInt(imageSlider[0].value) - 1);
-                        onSliderChange("input");
-                    }
-                    break;
-                case 39:
-                    if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
-                        imageSlider.val(parseInt(imageSlider[0].value) + 1);
-                        onSliderChange("input");
-                    }
-                    break;
-            }
-        };
-
         // dicomImage on mousewheel call sliderLeft or SliderRight
         dicomImage.addEventListener('wheel', function(e){
             if(e.deltaY > 0){
@@ -379,6 +361,18 @@
                     if(selectedIndex < seriesSelect.length - 1){
                         seriesSelect.selectedIndex = selectedIndex + 1;
                         setNewSeries(seriesSelect.value);
+                    }
+                    break;
+                case 37:
+                    if(parseInt(imageSlider.val()) > 1){
+                        imageSlider.val(parseInt(imageSlider[0].value) - 1);
+                        onSliderChange("input");
+                    }
+                    break;
+                case 39:
+                    if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
+                        imageSlider.val(parseInt(imageSlider[0].value) + 1);
+                        onSliderChange("input");
                     }
                     break;
             }
