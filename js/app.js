@@ -82,7 +82,7 @@ function handleDragOver(evt) {
 async function handleFileSelect(evt) {
     evt.stopPropagation();
     evt.preventDefault();
-    showNotification(`<div class="spinner-border text-secondary" role="status"></div><span class="m-3">Loading files. Please wait...</span>`);
+    showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`);
     
     let items = evt.dataTransfer.items;
     let files = [];
@@ -136,7 +136,7 @@ async function handleFileSelect(evt) {
     
     loadSeries(currentSeries);
     refreshSeries();
-    showNotification("Files loaded successfully");
+    showNotification(`Files loaded successfully`);
     
 }
 
