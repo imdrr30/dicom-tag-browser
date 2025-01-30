@@ -79,6 +79,11 @@ function handleDragOver(evt) {
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
 
+function showNotification(message){
+    toastMessage.innerHTML = message;
+    toastBootstrap.show();
+}
+
 
 async function handleFileSelect(evt) {
     evt.stopPropagation();
@@ -87,41 +92,62 @@ async function handleFileSelect(evt) {
     
     let items = evt.dataTransfer.items;
     let files = [];
-    
+
     if (items) {
+        // Collect all file/folder traversal promises
+        let traversePromises = [];
+        
         for (let item of items) {
             if (item.kind === "file") {
                 let entry = item.webkitGetAsEntry();
                 if (entry) {
-                    files = files.concat(await traverseFileTree(entry));
+                    traversePromises.push(traverseFileTree(entry));
                 }
             }
         }
+        
+        // Wait for all files/folders to be processed
+        let results = await Promise.all(traversePromises);
+        
+        // Flatten the results array
+        files = results.flat();
     } else {
         files = Array.from(evt.dataTransfer.files);
     }
-    
+
+    let processingPromises = [];
+
     for (let file of files) {
-        let metaDetails;
-        try{
-            metaDetails = await dumpFile(file, false);
-        }
-        catch(e){
-            continue;
-        }
+        processingPromises.push(processFile(file));
+    }
+
+    // Wait for all files to be processed
+    await Promise.all(processingPromises);
+
+    for (let series in images) {
+        images[series].sort((a, b) => a.instanceNumber - b.instanceNumber);
+    }
+
+    loadSeries(currentSeries);
+    refreshSeries();
+    showNotification(`Files loaded successfully`);
+}
+
+async function processFile(file) {
+    try {
+        let metaDetails = await dumpFile(file, false);
         let frames = parseInt(metaDetails.frames);
         let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
-        
+
         if (!(metaDetails.seriesId in images)) {
             images[metaDetails.seriesId] = [];
             seriesSlicePosition[metaDetails.seriesId] = 0;
         }
-        
-        if(loaded || (!loaded && currentSeries === "")){
+
+        if (loaded || (!loaded && currentSeries === "")) {
             currentSeries = metaDetails.seriesId;
         }
-        
-        
+
         for (let i = 0; i < frames; i++) {
             let frameWadouri = `${wadouri}?frame=${i}`;
             images[metaDetails.seriesId].push({
@@ -131,21 +157,9 @@ async function handleFileSelect(evt) {
                 instanceNumber: parseInt(metaDetails.instanceNumber) + i,
             });
         }
+    } catch (e) {
+        console.error("Error processing file:", e);
     }
-    
-    for (let series in images) {
-        images[series].sort((a, b) => a.instanceNumber - b.instanceNumber);
-    }
-    
-    loadSeries(currentSeries);
-    refreshSeries();
-    showNotification(`Files loaded successfully`);
-    
-}
-
-function showNotification(message){
-    toastMessage.innerHTML = message;
-    toastBootstrap.show();
 }
 
 async function traverseFileTree(entry) {
