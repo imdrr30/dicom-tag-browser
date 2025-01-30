@@ -10,6 +10,7 @@ let modalData = {};
 let images = {};
 let currentSeries = "";
 let clipboardHistory = {};
+let seriesSlicePosition = {};
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let dicomImage = document.getElementById('dicomImage');
@@ -113,6 +114,7 @@ async function handleFileSelect(evt) {
         
         if (!(metaDetails.seriesId in images)) {
             images[metaDetails.seriesId] = [];
+            seriesSlicePosition[metaDetails.seriesId] = 0;
         }
         
         if(loaded || (!loaded && currentSeries === "")){
@@ -187,23 +189,23 @@ function setNewSeries(seriesId){
 function loadSeries(seriesId){
 
     if (images[seriesId].length > 0) {
-        dumpFile(images[seriesId][0].file);
-        loadAndViewImage(images[seriesId][0]);
-    }
-    
-    let totalLength = images[seriesId].length;
-    totalSliceElement.innerHTML = totalLength;
-    imageSlider.attr("max", totalLength);
-    imageSlider.val("1");
-    currentSliceElement.innerHTML = "1"; 
-    
-    if (images[seriesId].length > 1) {
-        $($("#slider-div")[0]).attr("style", false);
-    }else{
-        $($("#slider-div")[0]).attr("style", "display: none;");
-    }
+        let currentSlicePosition = seriesSlicePosition[seriesId];
+        dumpFile(images[seriesId][currentSlicePosition].file);
+        loadAndViewImage(images[seriesId][currentSlicePosition]);
+        let totalLength = images[seriesId].length;
+        totalSliceElement.innerHTML = totalLength;
+        imageSlider.attr("max", totalLength);
+        imageSlider.val(currentSlicePosition + 1);
+        currentSliceElement.innerHTML = currentSlicePosition + 1; 
+        
+        if (images[seriesId].length > 1) {
+            $($("#slider-div")[0]).attr("style", false);
+        }else{
+            $($("#slider-div")[0]).attr("style", "display: none;");
+        }
 
-    $($("#seriesSelect")[0]).attr("style", "");
+        $($("#seriesSelect")[0]).attr("style", "");
+    }
 }
 
 
@@ -433,20 +435,19 @@ function showCopyIcon(){
     })
 }
 
-// Helper function that returns a Promise for FileReader
 function readFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = function () {
-            resolve(reader.result);  // Resolve with the ArrayBuffer
+            resolve(reader.result);
         };
 
         reader.onerror = function (error) {
-            reject(error);  // Reject on error
+            reject(error);
         };
 
-        reader.readAsArrayBuffer(file);  // Read the file
+        reader.readAsArrayBuffer(file);
     });
 }
 
@@ -470,6 +471,7 @@ async function onSliderChange(event){
     currentSliceElement.innerHTML = value;
 
     let newIndex = value - 1;
+    seriesSlicePosition[currentSeries] = newIndex;
     await setImage(newIndex);
 }
 
