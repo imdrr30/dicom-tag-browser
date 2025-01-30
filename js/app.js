@@ -115,9 +115,10 @@ async function handleFileSelect(evt) {
             images[metaDetails.seriesId] = [];
         }
         
-        if (currentSeries === "") {
+        if(loaded || (!loaded && currentSeries === "")){
             currentSeries = metaDetails.seriesId;
         }
+        
         
         for (let i = 0; i < frames; i++) {
             let frameWadouri = `${wadouri}?frame=${i}`;
