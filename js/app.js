@@ -9,7 +9,8 @@ const TAG_DETAILS_MAPPING = {
     "(0010,0010)": "patientName",
     "(0010,1010)": "patientAge",
     "(0008,1090)": "manufacturer",
-    "(0028,0008)": "frames"
+    "(0028,0008)": "frames",
+    "(0008,103E)": "seriesDescription"
 }
 
 
@@ -25,6 +26,7 @@ function loadDicomInfo(metaDetails){
     <p>${metaDetails.patientName}</p>
     <p>${metaDetails.patientAge}</p>
     <p>${metaDetails.manufacturer}</p>
+    <p>${metaDetails.seriesDescription}</p>
     `;
 }
 
@@ -76,7 +78,13 @@ async function handleFileSelect(evt) {
     }
     
     for (let file of files) {
-        let metaDetails = await dumpFile(file, false);
+        let metaDetails;
+        try{
+            metaDetails = await dumpFile(file, false);
+        }
+        catch(e){
+            continue;
+        }
         let frames = parseInt(metaDetails.frames);
         let wadouri = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
         
@@ -186,12 +194,13 @@ async function dumpFile(file, writeHtml=true) {
     const output = [];
     let metaDetails = {
         instanceNumber: "0",
-        instanceId: null,
-        seriesId: null,
-        studyId: null,
-        patientName: null,
-        patientAge: null,
-        manufacturer: null,
+        instanceId: "",
+        seriesId: "",
+        studyId: "",
+        patientName: "",
+        patientAge: "",
+        manufacturer: "",
+        seriesDescription: "",
         frames: "1"
     }
 

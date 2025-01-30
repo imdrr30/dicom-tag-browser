@@ -19,8 +19,8 @@
 
         #dicomInfo p{
             color: white;
-            font-size: 14px;
-            height: 3px;
+            font-size: 10px;
+            height: 1px;
         }
 
         .pointer {
@@ -304,6 +304,14 @@
         await dumpFile(image.file);
     }
 
+    async function onSliderChange(event){
+        let value = imageSlider.val();
+        currentSliceElement.innerHTML = value;
+
+        let newIndex = value - 1;
+        await setImage(newIndex);
+    }
+
     window.onload = function(){
         // Setup the dnd listeners.
         var body = document.getElementsByTagName('body')[0];
@@ -311,14 +319,25 @@
         body.addEventListener('drop', handleFileSelect, false);
 
 
-        imageSlider.on("input", async (event)=>{
-            let value = event.target.value;
-            currentSliceElement.innerHTML = value;
+        imageSlider.on("input", onSliderChange);
 
-            let newIndex = value - 1;
-            await setImage(newIndex);
-
-        })
+        // On arrow left or right change imageSlider value
+        document.onkeydown = function(e) {
+            switch (e.keyCode) {
+                case 37:
+                    if(parseInt(imageSlider.val()) > 1){
+                        imageSlider.val(parseInt(imageSlider[0].value) - 1);
+                        onSliderChange("input");
+                    }
+                    break;
+                case 39:
+                    if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
+                        imageSlider.val(parseInt(imageSlider[0].value) + 1);
+                        onSliderChange("input");
+                    }
+                    break;
+            }
+        };
     }
 
     
