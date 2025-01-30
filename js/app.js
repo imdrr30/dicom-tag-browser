@@ -650,6 +650,7 @@ window.onload = function(){
         switch (e.key) {
             case 'ArrowUp':
                 seriesSelect.blur();
+                imageSlider.blur();
                 if(selectedIndex > 0){
                     seriesSelect.selectedIndex = selectedIndex - 1;
                     setNewSeries(seriesSelect.value);
@@ -658,6 +659,7 @@ window.onload = function(){
             case 'ArrowDown':
                 // down arrow
                 seriesSelect.blur();
+                imageSlider.blur();
                 if(selectedIndex < seriesSelect.length - 1){
                     seriesSelect.selectedIndex = selectedIndex + 1;
                     setNewSeries(seriesSelect.value);
@@ -665,6 +667,7 @@ window.onload = function(){
                 break;
             case 'ArrowLeft':
                 seriesSelect.blur();
+                imageSlider.blur();
                 if(parseInt(imageSlider.val()) > 1){
                     imageSlider.val(parseInt(imageSlider[0].value) - 1);
                     onSliderChange("input");
@@ -672,6 +675,7 @@ window.onload = function(){
                 break;
             case 'ArrowRight':
                 seriesSelect.blur();
+                imageSlider.blur();
                 if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
                     imageSlider.val(parseInt(imageSlider[0].value) + 1);
                     onSliderChange("input");
