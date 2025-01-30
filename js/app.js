@@ -264,14 +264,14 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 </tr>
             </thead>
             <tbody>`)
-        for (var propertyName in dataSet.elements) {
+        for (let propertyName in dataSet.elements) {
             if(propertyName === 'xfffee00d') {
                 continue;
             }
-            var text = "<tr>"
-            var element = dataSet.elements[propertyName];
+            let text = "<tr>"
+            let element = dataSet.elements[propertyName];
 
-            var tagData = formatDicomTag(element.tag);
+            let tagData = formatDicomTag(element.tag);
 
             text += "<td show='copy'>" + tagData[0] + "</td>";
             text += "<td show='copy'>" + tagData[1] + "</td>";
@@ -286,19 +286,18 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 text += "<td>" + element.vr + "</td>";
             }
 
-            var color = 'black';
             text += "<td show='copy'>"
             if (element.items) {
                 output.push(text);
-                var itemNumber = 0;
+                let itemNumber = 0;
                 element.items.forEach(function (item) {
                     
-                    var itemsHTML = [];
+                    let itemsHTML = [];
                     let newMetaDetails = {};
                     dumpDataSet(item.dataSet, itemsHTML, newMetaDetails);
-                    var formattedItemTag = formatDicomTag(item.tag);
+                    let formattedItemTag = formatDicomTag(item.tag);
 
-                    var uuid = generateUUID();
+                    let uuid = generateUUID();
                     modalData[uuid] = {
                         html: itemsHTML.join(''),
                         originalTagData: tagData,
@@ -311,14 +310,14 @@ function dumpDataSet(dataSet, output, metaDetails) {
             }
             else if (element.fragments) {
                 output.push('' + text);
-                var itemNumber = 0;
+                let itemNumber = 0;
                 element.fragments.forEach(function (fragment) {
-                    var basicOffset;
+                    let basicOffset;
                     if(element.basicOffsetTable) {
                         basicOffset = element.basicOffsetTable[itemNumber];
                     }
 
-                    var str = 'Fragment #' + itemNumber++ + ' offset = ' + fragment.offset;
+                    let str = 'Fragment #' + itemNumber++ + ' offset = ' + fragment.offset;
                     str += '(' + basicOffset + ')';
                     str += '; length = ' + fragment.length + '';
                     output.push(str);
@@ -326,7 +325,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
             }
             else {
                 if (element.length < 128) {
-                    var numberValue = 0;
+                    let numberValue = 0;
                     if (element.length === 2) {
                         numberValue = dataSet.uint16(propertyName);
                         text += numberValue;
@@ -336,8 +335,8 @@ function dumpDataSet(dataSet, output, metaDetails) {
                         text += numberValue;
                     }
 
-                    var str = dataSet.string(propertyName);
-                    var stringIsAscii = isASCII(str);
+                    let str = dataSet.string(propertyName);
+                    let stringIsAscii = isASCII(str);
 
                     if (stringIsAscii) {
                         if (str !== undefined) {
@@ -347,23 +346,13 @@ function dumpDataSet(dataSet, output, metaDetails) {
                             text += '"' + str + '"';
                             filterDetails(tagData[0], str, metaDetails);
                         }
-                    }
-
-                    
-                    else {
-                        if (element.length !== 2 && element.length !== 4) {
-                            color = '#C8C8C8';
+                    }else if (element.length !== 2 && element.length !== 4) {
                             text += "binary data";
-                        }
                     }
-
-                    if (element.length === 0) {
-                        color = '#C8C8C8';
-                    }
+                    
 
                 }
                 else {
-                    color = '#C8C8C8';
                     text += "data too long to show";
                 }
 
@@ -376,7 +365,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
 
         output.push('</tbody></table>')
     } catch(err) {
-        var ex = {
+        let ex = {
             exception: err,
             output: output
         }
@@ -447,9 +436,9 @@ function readFile(file) {
     });
 }
 
-openModal = function(uuid) {
-    var modalContent = document.getElementById('modalContent');
-    var sequenceContent = modalData[uuid];
+let openModal = function(uuid) {
+    let modalContent = document.getElementById('modalContent');
+    let sequenceContent = modalData[uuid];
     modalContent.innerHTML = sequenceContent.html;
     $('#modal-title')[0].innerHTML = `Sequence #${sequenceContent.itemNumber} - ${sequenceContent.originalTagData.join(" - ")}`;
     showCopyIcon();
@@ -490,7 +479,7 @@ function SliderRight(){
 
 window.onload = function(){
     // Setup the dnd listeners.
-    var body = document.getElementsByTagName('body')[0];
+    let body = document.getElementsByTagName('body')[0];
     body.addEventListener('dragover', handleDragOver, false);
     body.addEventListener('drop', handleFileSelect, false);
 
@@ -511,15 +500,15 @@ window.onload = function(){
     document.onkeydown = function(e) {
         let seriesSelect = $("#seriesSelect")[0];
         let selectedIndex = seriesSelect.selectedIndex;
-        switch (e.keyCode) {
-            case 38:
+        switch (e.key) {
+            case 'ArrowUp':
                 seriesSelect.blur();
                 if(selectedIndex > 0){
                     seriesSelect.selectedIndex = selectedIndex - 1;
                     setNewSeries(seriesSelect.value);
                 }
                 break;
-            case 40:
+            case 'ArrowDown':
                 // down arrow
                 seriesSelect.blur();
                 if(selectedIndex < seriesSelect.length - 1){
@@ -527,14 +516,14 @@ window.onload = function(){
                     setNewSeries(seriesSelect.value);
                 }
                 break;
-            case 37:
+            case 'ArrowLeft':
                 seriesSelect.blur();
                 if(parseInt(imageSlider.val()) > 1){
                     imageSlider.val(parseInt(imageSlider[0].value) - 1);
                     onSliderChange("input");
                 }
                 break;
-            case 39:
+            case 'ArrowRight':
                 seriesSelect.blur();
                 if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
                     imageSlider.val(parseInt(imageSlider[0].value) + 1);
