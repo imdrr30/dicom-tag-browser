@@ -116,7 +116,9 @@ function handleDragOver(evt) {
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
 
-function showNotification(message){
+function showNotification(message, autoHide = true) {
+    toastBootstrap._config.autohide = autoHide;
+    $('[data-bs-dismiss="toast"]')[0].style.display = !autoHide ? "none" : "";
     toastMessage.innerHTML = message;
     toastBootstrap.show();
 }
@@ -141,15 +143,15 @@ async function handleFileSelect(evt) {
     let start = performance.now();
     let currentNoOfSeries = Object.keys(images).length;
     let currentNoOfStudies = Object.keys(studyMapping).length;
-    showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`);
-    
+    showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`, false);
+
     let items = evt.dataTransfer.items;
     let files = [];
 
     if (items) {
         // Collect all file/folder traversal promises
         let traversePromises = [];
-        
+
         for (let item of items) {
             if (item.kind === "file") {
                 let entry = item.webkitGetAsEntry();
@@ -158,16 +160,28 @@ async function handleFileSelect(evt) {
                 }
             }
         }
-        
+
         // Wait for all files/folders to be processed
         let results = await Promise.all(traversePromises);
-        
+
         // Flatten the results array
         files = results.flat();
     } else {
         files = Array.from(evt.dataTransfer.files);
     }
 
+    // Check for ZIP files and process them if any
+    let zipFiles = files.filter(file => file.name.endsWith('.zip'));
+
+    if (zipFiles.length > 0) {
+        showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Unzipping Files. Please wait...</span>`, false);
+        for (let zipFile of zipFiles) {
+            let unzippedFiles = await handleZipFile(zipFile);
+            files = files.concat(unzippedFiles);
+        }
+    }
+
+    // Continue with the existing processing logic for all files
     let processingPromises = [];
 
     for (let file of files) {
@@ -184,8 +198,41 @@ async function handleFileSelect(evt) {
     loadSeries(currentSeries);
     refreshSeries();
     let end = performance.now();
-    showNotification(`${Object.keys(studyMapping).length-currentNoOfStudies} studies and ${Object.keys(images).length-currentNoOfSeries} series loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
+    showNotification(`${Object.keys(studyMapping).length - currentNoOfStudies} studies and ${Object.keys(images).length - currentNoOfSeries} series loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
 }
+
+async function handleZipFile(zipFile) {
+    return new Promise((resolve, reject) => {
+        let reader = new FileReader();
+        reader.onload = async function (e) {
+            try {
+                // Use JSZip to unzip the file
+                let zip = await JSZip.loadAsync(e.target.result);
+                let fileNames = Object.keys(zip.files);
+                let unzippedFiles = [];
+
+                for (let fileName of fileNames) {
+                    let file = zip.files[fileName];
+
+                    if (!file.dir) {
+                        let fileBlob = await file.async('blob');
+                        unzippedFiles.push(new File([fileBlob], fileName));
+                    }
+                }
+
+                resolve(unzippedFiles);
+            } catch (error) {
+                console.error("Error unzipping file:", error);
+                reject(error);
+            }
+        };
+        reader.onerror = function (error) {
+            reject(error);
+        };
+        reader.readAsArrayBuffer(zipFile);
+    });
+}
+
 
 async function processFile(file) {
     try {
