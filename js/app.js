@@ -444,7 +444,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 text += "<td>" + element.vr + "</td>";
             }
 
-            text += "<td>" + DicomTags[tagData[0]]?.vm + "</td>";
+            text += "<td>" + DicomTags[tagData[0]]?.vm+ "</td>";
 
             text += "<td show='copy'>"
             if (element.items) {
@@ -788,4 +788,11 @@ window.onload = function(){
         }
     };
     
+}
+
+
+function toggleDarkMode(){
+    let html = $('html')[0];
+    let darkMode = html.getAttribute("data-bs-theme") === "dark";
+    html.setAttribute("data-bs-theme", darkMode ? "light" : "dark");
 }
