@@ -334,11 +334,11 @@ function dumpDataSet(dataSet, output, metaDetails) {
         output.push(`<table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Tag</th>
-                    <th>Name</th>
-                    <th>Length</th>
-                    <th>VR</th>
-                    <th>Value</th>
+                    <th class="col-md-1">Tag</th>
+                    <th class="col-md-4">Name</th>
+                    <th class="col-md-1">Length</th>
+                    <th class="col-md-1">VR</th>
+                    <th class="col-md-5" style="word-wrap: break-word;">Value</th>
                 </tr>
             </thead>
             <tbody>`)
@@ -516,9 +516,16 @@ function dumpDataSet(dataSet, output, metaDetails) {
                     }
                 }
                 else {
-                    text += dataDownloadLink(element, "data");
-                    text += " of length " + element.length + " for VR " + vr + " too long to show";
-                    text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
+                    if (vr == 'FL') {
+                        text += dataSet.float(propertyName);
+                        for(let i=1; i < dataSet.elements[propertyName].length/4; i++) {
+                            text += '\\' + dataSet.float(propertyName, i);
+                        }
+                    }else{
+                        text += dataDownloadLink(element, "data");
+                        text += " of length " + element.length + " for VR " + vr + " too long to show";
+                        text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
+                    }
                 }
 
                 output.push(text);
