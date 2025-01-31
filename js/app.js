@@ -246,11 +246,14 @@ async function processFile(file) {
         }
 
         if(!(metaDetails.studyId in studyMapping)){
-            studyMapping[metaDetails.studyId] = [];
+            studyMapping[metaDetails.studyId] = {
+                patientInfo: `${metaDetails.patientName} - ${metaDetails.patientAge}`,
+                series: []
+            };
         }
 
-        if(!studyMapping[metaDetails.studyId].includes(metaDetails.seriesId)){
-            studyMapping[metaDetails.studyId].push(metaDetails.seriesId);
+        if(!studyMapping[metaDetails.studyId].series.includes(metaDetails.seriesId)){
+            studyMapping[metaDetails.studyId].series.push(metaDetails.seriesId);
         }
 
         if (loaded || (!loaded && currentSeries === "")) {
@@ -314,8 +317,8 @@ function refreshSeries(){
     selectElement.innerHTML = "";
     let newHtml = "";
     for (let study in studyMapping){
-        newHtml += `<optgroup label="${study}">`;
-        for (let series of studyMapping[study]){
+        newHtml += `<optgroup label="${studyMapping[study].patientInfo} - ${study}">`;
+        for (let series of studyMapping[study].series){
             newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${images[series][0].metaDetails.seriesDescription} - ${series}</option>`;
         }
         newHtml += `</optgroup>`;
