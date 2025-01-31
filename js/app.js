@@ -9,6 +9,7 @@ let currentSeries = "";
 let clipboardHistory = {};
 let seriesSlicePosition = {};
 let showSHA1 = false;
+let studyMapping = {};
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let dicomImage = document.getElementById('dicomImage');
@@ -139,6 +140,7 @@ async function handleFileSelect(evt) {
     evt.preventDefault();
     let start = performance.now();
     let currentNoOfSeries = Object.keys(images).length;
+    let currentNoOfStudies = Object.keys(studyMapping).length;
     showNotification(`<div class="spinner-border text-secondary" role="status"></div><span style="top: -8px;left: 15px;position: relative;">Loading Files. Please wait...</span>`);
     
     let items = evt.dataTransfer.items;
@@ -182,7 +184,7 @@ async function handleFileSelect(evt) {
     loadSeries(currentSeries);
     refreshSeries();
     let end = performance.now();
-    showNotification(`${Object.keys(images).length-currentNoOfSeries} series loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
+    showNotification(`${Object.keys(studyMapping).length-currentNoOfStudies} studies and ${Object.keys(images).length-currentNoOfSeries} series loaded in ${((end - start) / 1000).toFixed(2)} seconds`);
 }
 
 async function processFile(file) {
@@ -194,6 +196,14 @@ async function processFile(file) {
         if (!(metaDetails.seriesId in images)) {
             images[metaDetails.seriesId] = [];
             seriesSlicePosition[metaDetails.seriesId] = 0;
+        }
+
+        if(!(metaDetails.studyId in studyMapping)){
+            studyMapping[metaDetails.studyId] = [];
+        }
+
+        if(!studyMapping[metaDetails.studyId].includes(metaDetails.seriesId)){
+            studyMapping[metaDetails.studyId].push(metaDetails.seriesId);
         }
 
         if (loaded || (!loaded && currentSeries === "")) {
@@ -256,8 +266,12 @@ function refreshSeries(){
     let selectElement = $("#seriesSelect")[0]
     selectElement.innerHTML = "";
     let newHtml = "";
-    for (let series in images) {
-        newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${images[series][0].metaDetails.seriesDescription} - ${series}</option>`;
+    for (let study in studyMapping){
+        newHtml += `<optgroup label="${study}">`;
+        for (let series of studyMapping[study]){
+            newHtml += `<option value="${series}" ${(currentSeries==series)?'selected':''}>${images[series][0].metaDetails.seriesDescription} - ${series}</option>`;
+        }
+        newHtml += `</optgroup>`;
     }
     selectElement.innerHTML = newHtml;
 }

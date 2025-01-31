@@ -31,11 +31,6 @@ td i{
     display: none;
 }
 
-.table thead th {
-    position: sticky;
-    top: 0;
-}
-
 td:hover i{
     display: inline;
 }
@@ -69,4 +64,8 @@ td[show="copied"] i:hover{
 .select2-container--default .select2-results__option--selected{
     background-color: var(--bs-primary) !important;
     color: var(--bs-heading-color) !important;
+}
+
+.select2-container--open {
+    width: 800px !important; /* Increase the width as needed */
 }
