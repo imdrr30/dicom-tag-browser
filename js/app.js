@@ -106,7 +106,6 @@ function loadAndViewImage(imageData) {
     }, function(err) {
         console.log(err);
     });
-    performSearch($("#searchInput")[0].value);
 }
 
 
@@ -331,6 +330,7 @@ async function dumpFile(file, writeHtml=true) {
     if(writeHtml){
         document.getElementById('dropZone').innerHTML = output.join('');
         showCopyIcon();
+        performSearch($("#searchInput")[0].value);
     }
     return metaDetails;
 }
@@ -349,6 +349,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
                     <th class="col-md-4">Name</th>
                     <th class="col-md-1">Length</th>
                     <th class="col-md-1">VR</th>
+                    <th class="col-md-1">VM</th>
                     <th class="col-md-5">Value</th>
                 </tr>
             </thead>
@@ -378,6 +379,8 @@ function dumpDataSet(dataSet, output, metaDetails) {
             if (element.vr) {
                 text += "<td>" + element.vr + "</td>";
             }
+
+            text += "<td>" + DicomTags[tagData[0]]?.vm + "</td>";
 
             text += "<td show='copy'>"
             if (element.items) {
