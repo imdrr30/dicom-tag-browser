@@ -103,12 +103,10 @@ function loadAndViewImage(imageData) {
             enableTool('Zoom', 4);
             loaded = true;
         }
-
-        performSearch($("#searchInput")[0].value);
-        
     }, function(err) {
         console.log(err);
     });
+    performSearch($("#searchInput")[0].value);
 }
 
 
@@ -121,6 +119,19 @@ function handleDragOver(evt) {
 function showNotification(message){
     toastMessage.innerHTML = message;
     toastBootstrap.show();
+}
+
+function downloadData(data, fileName) {
+    let blob = new Blob([data], {type: 'application/octet-stream'});
+    let objectURL = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    a.href = objectURL;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(objectURL);
+    $(a).remove();
 }
 
 
@@ -200,7 +211,7 @@ async function processFile(file) {
             });
         }
     } catch (e) {
-        console.log("Error processing file:");
+        console.log("Error processing file", e);
     }
 }
 
@@ -338,7 +349,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
                     <th class="col-md-4">Name</th>
                     <th class="col-md-1">Length</th>
                     <th class="col-md-1">VR</th>
-                    <th class="col-md-5" style="word-wrap: break-word;">Value</th>
+                    <th class="col-md-5">Value</th>
                 </tr>
             </thead>
             <tbody>`)
@@ -358,6 +369,10 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 text += "<td>(-1)</td>";
             }else{
                 text += "<td>" + element.length + "</td>";
+            }
+
+            if(!element.vr){
+                element.vr = DicomTags[tagData[0]]?.vr;
             }
 
             if (element.vr) {
@@ -403,6 +418,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
             }
             else {
                 let vr = element.vr;
+                let tag = element.tag;
                 if (element.length < 128) {
                     if (element.vr === undefined && tag === undefined) {
                         if (element.length === 2) {
@@ -516,16 +532,9 @@ function dumpDataSet(dataSet, output, metaDetails) {
                     }
                 }
                 else {
-                    if (vr == 'FL') {
-                        text += dataSet.float(propertyName);
-                        for(let i=1; i < dataSet.elements[propertyName].length/4; i++) {
-                            text += '\\' + dataSet.float(propertyName, i);
-                        }
-                    }else{
-                        text += dataDownloadLink(element, "data");
-                        text += " of length " + element.length + " for VR " + vr + " too long to show";
-                        text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
-                    }
+                    text += dataDownloadLink(element, "data");
+                    text += " of length " + element.length + " for VR " + vr + " too long to show";
+                    text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
                 }
 
                 output.push(text);
@@ -550,7 +559,7 @@ function formatDicomTag(tag) {
     const group = cleanedTag.slice(0, 4).toUpperCase();
     const element = cleanedTag.slice(4).toUpperCase();
     const tagFormatted = `(${group},${element})`;
-    return [tagFormatted, DicomTags[tagFormatted] ?? 'Private Tag'];
+    return [tagFormatted, DicomTags[tagFormatted]?.name ?? 'Private Tag'];
 }
 
 
