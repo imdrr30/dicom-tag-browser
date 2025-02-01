@@ -744,15 +744,18 @@ function stopMovie() {
 function playAsMovie(){
     
     let slider = imageSlider[0];
-    movieInterval = setInterval(() => {
-        if (parseInt(slider.value) < parseInt(totalSliceElement.innerHTML)) {
-            slider.value = parseInt(slider.value) + 1;
-            imageSlider.trigger("input");
-        } else {
-            slider.value = 1;
-            imageSlider.trigger("input");
-        }
-    }, 1000 / 30);
+    if(parseInt(totalSliceElement.innerHTML) > 2){
+        movieInterval = setInterval(() => {
+            if (parseInt(slider.value) < parseInt(totalSliceElement.innerHTML)) {
+                slider.value = parseInt(slider.value) + 1;
+                imageSlider.trigger("input");
+            } else {
+                slider.value = 1;
+                imageSlider.trigger("input");
+            }
+        }, 1000 / 30);
+    }
+    
      
 }
 
