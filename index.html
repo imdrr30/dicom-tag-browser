@@ -37,7 +37,7 @@
                 <div class="col-md-1"><button class="btn movieControlButton" onclick="toggleMoviePlayback();"><i id="movieControlIcon" class="bi bi-play-fill"></i></button></div>
                 <div class="col-md-1 ml-1" id="currentSlice">1</div>
                 <div class="col-md-9">
-                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" onclick="stopMovie()" />
+                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" onclick="stopMovie()" onKeyDown="return false;" />
                 </div>
                 <div class="col-md-1" id="totalSlice">1</div>
             </div>

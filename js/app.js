@@ -738,6 +738,8 @@ function stopMovie() {
     if(movieInterval){
         clearInterval(movieInterval);
         movieInterval = null;
+        let icon = $('#movieControlIcon')[0];
+        icon.setAttribute('class', "bi bi-play-fill");
     }
     
 }
@@ -746,6 +748,8 @@ function playAsMovie(){
     
     let slider = imageSlider[0];
     if(parseInt(totalSliceElement.innerHTML) > 2){
+        let icon = $('#movieControlIcon')[0];
+        icon.setAttribute('class', "bi bi-pause-fill");
         movieInterval = setInterval(() => {
             if (parseInt(slider.value) < parseInt(totalSliceElement.innerHTML)) {
                 slider.value = parseInt(slider.value) + 1;
@@ -755,19 +759,17 @@ function playAsMovie(){
                 imageSlider.trigger("input");
             }
         }, 1000 / 30);
+
     }
     
      
 }
 
 function toggleMoviePlayback(){
-    let icon = $('#movieControlIcon')[0];
     if (movieInterval) {
         stopMovie();
-        icon.setAttribute('class', "bi bi-play-fill");
     } else {
         playAsMovie();
-        icon.setAttribute('class', "bi bi-pause-fill");
     }
 }
 
