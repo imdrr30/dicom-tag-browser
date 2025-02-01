@@ -16,7 +16,7 @@ let seriesSlicePosition = {};
 let showSHA1 = false;
 let studyMapping = {};
 let movieInterval = null;
-let viewport = null;
+let viewport = {};
 let metaDetails = {};
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
@@ -92,9 +92,9 @@ function enableTool(toolName, mouseButtonMask) {
 }
 
 function loadDicomInfo(){
-    viewport = cornerstone.getViewport(element);
-    let windowWidth = parseFloat(viewport.voi.windowWidth.toFixed(2));
-    let windowCenter = parseFloat(viewport.voi.windowCenter.toFixed(2));
+    let viewPort = cornerstone.getViewport(element);
+    let windowWidth = parseFloat(viewPort.voi.windowWidth.toFixed(2));
+    let windowCenter = parseFloat(viewPort.voi.windowCenter.toFixed(2));
     $('#dicomInfo')[0].innerHTML = `
     <p>${metaDetails.patientName}</p>
     <p>${metaDetails.patientAge}</p>
@@ -107,7 +107,11 @@ function loadDicomInfo(){
 function loadAndViewImage(imageData) {
     let imageId = imageData.wadouri;
     cornerstone.loadImage(imageId).then(function(image) {
+        if(!(currentSeries in viewport)){
+            viewport[currentSeries] = cornerstone.getDefaultViewportForImage(element, image);
+        }
         cornerstone.displayImage(element, image);
+        cornerstone.setViewport(element, viewport[currentSeries])
         metaDetails = imageData.metaDetails;
         loadDicomInfo();
         if(!loaded){
