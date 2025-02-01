@@ -2,4 +2,4 @@
 
 Try now: [Live Link](https://dicom-tag-browser.vercel.app/)
 
-![Live preview for dicom viewer](images/screenshot.png)
+![Live preview for dicom viewer](images/Screenshot.png)
