@@ -10,6 +10,7 @@ let clipboardHistory = {};
 let seriesSlicePosition = {};
 let showSHA1 = false;
 let studyMapping = {};
+let movieInterval = null;
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let dicomImage = document.getElementById('dicomImage');
@@ -21,6 +22,7 @@ let imageSlider = $($("#dicomSlice")[0])
 const toastLiveExample = document.getElementById('liveToast')
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
 const toastMessage = document.getElementById('toast-body')
+
 
 
 
@@ -327,6 +329,7 @@ function refreshSeries(){
 }
 
 function setNewSeries(seriesId){
+    stopMovie();
     currentSeries = seriesId;
     loadSeries(seriesId);
 }
@@ -444,7 +447,7 @@ function dumpDataSet(dataSet, output, metaDetails) {
                 text += "<td>" + element.vr + "</td>";
             }
 
-            text += "<td>" + DicomTags[tagData[0]]?.vm+ "</td>";
+            text += "<td>" + DicomTags[tagData[0]]?.vm?.toUpperCase() + "</td>";
 
             text += "<td show='copy'>"
             if (element.items) {
@@ -709,6 +712,7 @@ async function onSliderChange(event){
 }
 
 function sliderLeft(){
+    stopMovie();
     if(parseInt(imageSlider.val()) > 1){
         imageSlider.val(parseInt(imageSlider[0].value) - 1);
         onSliderChange("input");
@@ -716,10 +720,40 @@ function sliderLeft(){
 }
 
 function SliderRight(){
+    stopMovie()
     if(parseInt(imageSlider.val()) < parseInt(totalSliceElement.innerHTML)){
         imageSlider.val(parseInt(imageSlider[0].value) + 1);
         onSliderChange("input");
     }
+}
+
+function toggleDarkMode(){
+    let html = $('html')[0];
+    let darkMode = html.getAttribute("data-bs-theme") === "dark";
+    html.setAttribute("data-bs-theme", darkMode ? "light" : "dark");
+}
+
+function stopMovie() {
+    if(movieInterval){
+        clearInterval(movieInterval);
+        movieInterval = null;
+    }
+    
+}
+
+function playAsMovie(){
+    
+    let slider = imageSlider[0];
+    movieInterval = setInterval(() => {
+        if (parseInt(slider.value) < parseInt(totalSliceElement.innerHTML)) {
+            slider.value = parseInt(slider.value) + 1;
+            imageSlider.trigger("input");
+        } else {
+            slider.value = 1;
+            imageSlider.trigger("input");
+        }
+    }, 1000 / 30);
+     
 }
 
 
@@ -745,11 +779,21 @@ window.onload = function(){
 
     // document on arrow up or down pressed change series from select series and trigger change event
     document.onkeydown = function(e) {
+
+        if (event.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            if (movieInterval) {
+                stopMovie();
+            } else {
+                playAsMovie();
+            }
+
+            return;
+        }
+
         let seriesSelect = $("#seriesSelect"); // Select2 element
     
         let options = seriesSelect.find("option");
         let selectedIndex = options.index(options.filter(":selected"));
-    
         switch (e.key) {
             case 'ArrowUp': // Move up in the dropdown
                 seriesSelect.select2("close"); // Close the Select2 dropdown
@@ -771,7 +815,6 @@ window.onload = function(){
                 }
                 break;
             case 'ArrowLeft':
-                console.log("left arrow");
                 imageSlider.blur();
                 if(parseInt(imageSlider.val()) > 1){
                     imageSlider.val(parseInt(imageSlider[0].value) - 1);
@@ -788,11 +831,4 @@ window.onload = function(){
         }
     };
     
-}
-
-
-function toggleDarkMode(){
-    let html = $('html')[0];
-    let darkMode = html.getAttribute("data-bs-theme") === "dark";
-    html.setAttribute("data-bs-theme", darkMode ? "light" : "dark");
 }

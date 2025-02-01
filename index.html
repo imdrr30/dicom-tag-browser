@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-md-4">
             <div style="margin-top: 10%;" class="heading mx-5">
-                <div style="display: flex;" onclick="toggleDarkMode()">
+                <div style="display: flex;">
                     <img src="images/logo.webp" alt="dicom-browser-logo" style="width: 50px; height: 50px;" />
                     <h3 class="mt-2 mx-2">DICOM Inspector</h3>
                 </div>
@@ -34,7 +34,7 @@
             <div id="slider-div" style="display: none;" class="row mx-3">
                 <div class="col-md-1 ml-5" id="currentSlice">1</div>
                 <div class="col-md-10">
-                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" />
+                    <input type="range" id="dicomSlice" min="1" max="1" value="1" class="form-range" onclick="stopMovie()" />
                 </div>
                 
                 <div class="col-md-1" id="totalSlice">1</div>
