@@ -16,6 +16,8 @@ let seriesSlicePosition = {};
 let showSHA1 = false;
 let studyMapping = {};
 let movieInterval = null;
+let viewport = null;
+let metaDetails = {};
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let element = document.getElementById('dicomImage');
@@ -89,12 +91,16 @@ function enableTool(toolName, mouseButtonMask) {
     cornerstoneTools.setToolActive(toolName, { mouseButtonMask: mouseButtonMask });
 }
 
-function loadDicomInfo(metaDetails){
+function loadDicomInfo(){
+    viewport = cornerstone.getViewport(element);
+    let windowWidth = parseFloat(viewport.voi.windowWidth.toFixed(2));
+    let windowCenter = parseFloat(viewport.voi.windowCenter.toFixed(2));
     $('#dicomInfo')[0].innerHTML = `
     <p>${metaDetails.patientName}</p>
     <p>${metaDetails.patientAge}</p>
     <p>${metaDetails.manufacturer}</p>
     <p>${metaDetails.seriesDescription}</p>
+    <p>WW:${windowWidth} WC:${windowCenter}</p>
     `;
 }
 
@@ -102,7 +108,8 @@ function loadAndViewImage(imageData) {
     let imageId = imageData.wadouri;
     cornerstone.loadImage(imageId).then(function(image) {
         cornerstone.displayImage(element, image);
-        loadDicomInfo(imageData.metaDetails);
+        metaDetails = imageData.metaDetails;
+        loadDicomInfo();
         if(!loaded){
             enableTool('Wwwc', 1);
             enableTool('Pan', 2);
@@ -776,6 +783,10 @@ function toggleMoviePlayback(){
     }
 }
 
+function onImageRendered() {
+    loadDicomInfo();
+}
+
 
 
 
@@ -795,6 +806,8 @@ window.onload = function(){
             sliderLeft();
         }
     });
+
+    element.addEventListener(cornerstone.EVENTS.IMAGE_RENDERED, onImageRendered)
 
 
     // document on arrow up or down pressed change series from select series and trigger change event
