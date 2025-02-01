@@ -1,7 +1,12 @@
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 cornerstoneTools.external.cornerstone = cornerstone;
-cornerstoneTools.init();
+cornerstoneTools.init({
+    mouseEnabled: true,
+    touchEnabled: true,
+    globalToolSyncEnabled: true,
+    showSVGCursors: true,
+  });
 
 let modalData = {};
 let images = {};
@@ -13,8 +18,8 @@ let studyMapping = {};
 let movieInterval = null;
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
-let dicomImage = document.getElementById('dicomImage');
-cornerstone.enable(dicomImage);
+let element = document.getElementById('dicomImage');
+cornerstone.enable(element);
 let loaded = false;
 let totalSliceElement = $("#totalSlice")[0]
 let currentSliceElement = $("#currentSlice")[0]
@@ -95,10 +100,8 @@ function loadDicomInfo(metaDetails){
 
 function loadAndViewImage(imageData) {
     let imageId = imageData.wadouri;
-    const element = document.getElementById('dicomImage');
     cornerstone.loadImage(imageId).then(function(image) {
-        const viewport = cornerstone.getDefaultViewportForImage(element, image);
-        cornerstone.displayImage(element, image, viewport);
+        cornerstone.displayImage(element, image);
         loadDicomInfo(imageData.metaDetails);
         if(!loaded){
             enableTool('Wwwc', 1);
@@ -785,7 +788,7 @@ window.onload = function(){
     imageSlider.on("input", onSliderChange);
 
     // dicomImage on mousewheel call sliderLeft or SliderRight
-    dicomImage.addEventListener('wheel', function(e){
+    element.addEventListener('wheel', function(e){
         if(e.deltaY > 0){
             SliderRight();
         }else{
