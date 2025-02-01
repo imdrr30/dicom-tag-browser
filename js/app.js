@@ -351,9 +351,9 @@ function loadSeries(seriesId){
         currentSliceElement.innerHTML = currentSlicePosition + 1; 
         
         if (images[seriesId].length > 1) {
-            $($("#slider-div")[0]).attr("style", false);
+            $(".slider-div").attr("style", false);
         }else{
-            $($("#slider-div")[0]).attr("style", "display: none;");
+            $(".slider-div").attr("style", "display: none;");
         }
 
         $($("#seriesSelect")[0]).attr("style", "");
@@ -760,6 +760,17 @@ function playAsMovie(){
      
 }
 
+function toggleMoviePlayback(){
+    let icon = $('#movieControlIcon')[0];
+    if (movieInterval) {
+        stopMovie();
+        icon.setAttribute('class', "bi bi-play-fill");
+    } else {
+        playAsMovie();
+        icon.setAttribute('class', "bi bi-pause-fill");
+    }
+}
+
 
 
 
@@ -784,13 +795,8 @@ window.onload = function(){
     // document on arrow up or down pressed change series from select series and trigger change event
     document.onkeydown = function(e) {
 
-        if (event.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-            if (movieInterval) {
-                stopMovie();
-            } else {
-                playAsMovie();
-            }
-
+        if (event.code === 'Space' && !['INPUT','TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {  
+            toggleMoviePlayback();
             return;
         }
 
