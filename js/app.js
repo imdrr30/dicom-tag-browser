@@ -104,6 +104,7 @@ function loadAndViewImage(imageData) {
             enableTool('Wwwc', 1);
             enableTool('Pan', 2);
             enableTool('Zoom', 4);
+            enableTool('OrientationMarkers', 0);
             loaded = true;
         }
     }, function(err) {
