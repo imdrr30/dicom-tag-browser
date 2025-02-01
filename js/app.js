@@ -116,8 +116,8 @@ function loadAndViewImage(imageData) {
         loadDicomInfo();
         if(!loaded){
             enableTool('Wwwc', 1);
-            enableTool('Pan', 2);
-            enableTool('Zoom', 4);
+            enableTool('Pan', 4);
+            enableTool('Zoom', 2);
             enableTool('OrientationMarkers', 0);
             loaded = true;
         }
