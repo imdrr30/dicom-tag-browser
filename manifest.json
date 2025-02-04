@@ -12,5 +12,13 @@
             "sizes": "192x192",
             "type": "image/webp"
         }
+    ],
+    "file_handlers": [
+        {
+            "action": "/",
+            "accept": {
+                "application/octet-stream": [".*"]
+            }
+        }
     ]
 }
