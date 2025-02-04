@@ -617,9 +617,25 @@ function dumpDataSet(dataSet, output, metaDetails) {
                     }
                 }
                 else {
-                    text += dataDownloadLink(element, "data");
-                    text += " of length " + element.length + " for VR " + vr + " too long to show";
-                    text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
+                    if (tagData[0] === "(0042,0011)") {
+                        let pdfBlob = new Blob([dataSet.byteArray.slice(element.dataOffset, element.dataOffset + element.length)], { type: 'application/pdf' });
+                        let pdfUrl = URL.createObjectURL(pdfBlob);
+                        let modalHtml = `<iframe style="width:100%;height:80vh" src="${pdfUrl}#zoom=100"></iframe>`;
+
+                        let uuid = generateUUID();
+                        modalData[uuid] = {
+                            html: modalHtml,
+                            originalTagData: tagData,
+                            baseTagData: tagData,
+                            itemNumber: 0
+                        };
+
+                        text+= `<p class="pointer" onclick="openModal('`+ uuid +`')">View Document</p>`
+                    }else{
+                        text += dataDownloadLink(element, "data");
+                        text += " of length " + element.length + " for VR " + vr + " too long to show";
+                        text += sha1Text(dataSet.byteArray, element.dataOffset, element.length);
+                    }
                 }
 
                 output.push(text);
