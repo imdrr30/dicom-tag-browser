@@ -17,7 +17,7 @@
         {
             "action": "/",
             "accept": {
-                "application/octet-stream": [".*"]
+                "application/dicom": [".dcm", ".dicom", ".dc3", ".dcm30"]
             }
         }
     ]
