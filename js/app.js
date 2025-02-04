@@ -862,5 +862,7 @@ window.onload = function(){
                 break;
         }
     };
+
+    $("#searchInput")[0].focus();
     
 }
