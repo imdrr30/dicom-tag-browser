@@ -68,6 +68,7 @@ td[show="copied"] i:hover{
 
 .select2-container--open {
     width: 800px !important; /* Increase the width as needed */
+    height: 80vh;
 }
 
 .movieControlButton{
