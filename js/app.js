@@ -834,6 +834,7 @@ window.onload = function(){
     document.onkeydown = function(e) {
         
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
             $("#searchInput")[0].focus();
             return;
         }
