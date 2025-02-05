@@ -96,10 +96,10 @@ function loadDicomInfo(){
     let windowWidth = parseFloat(viewPort.voi.windowWidth.toFixed(2));
     let windowCenter = parseFloat(viewPort.voi.windowCenter.toFixed(2));
     $('#dicomInfo')[0].innerHTML = `
-    <p>${metaDetails.patientName}</p>
-    <p>${metaDetails.patientAge}</p>
-    <p>${metaDetails.manufacturer}</p>
-    <p>${metaDetails.seriesDescription}</p>
+    <p>${metaDetails.patientName ?? ""}</p>
+    <p>${metaDetails.patientAge ?? ""}</p>
+    <p>${metaDetails.manufacturer ?? ""}</p>
+    <p>${metaDetails.seriesDescription ?? ""}</p>
     <p>WW:${windowWidth} WC:${windowCenter}</p>
     `;
 }
