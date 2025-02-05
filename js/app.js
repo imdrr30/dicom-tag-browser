@@ -832,8 +832,6 @@ window.onload = function(){
 
     // document on arrow up or down pressed change series from select series and trigger change event
     document.onkeydown = function(e) {
-
-        e.preventDefault();
         
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
             $("#searchInput")[0].focus();
