@@ -18,10 +18,12 @@ let studyMapping = {};
 let movieInterval = null;
 let viewport = {};
 let metaDetails = {};
+let currentIntensity = null;
 
 let myModal = new bootstrap.Modal(document.getElementById('myModal'));
 let element = document.getElementById('dicomImage');
 cornerstone.enable(element);
+let canvas = element.querySelector("canvas");
 let loaded = false;
 let totalSliceElement = $("#totalSlice")[0]
 let currentSliceElement = $("#currentSlice")[0]
@@ -95,13 +97,18 @@ function loadDicomInfo(){
     let viewPort = cornerstone.getViewport(element);
     let windowWidth = parseFloat(viewPort.voi.windowWidth.toFixed(2));
     let windowCenter = parseFloat(viewPort.voi.windowCenter.toFixed(2));
+
+    let intensity = "";
+    if (currentIntensity!=null){
+        intensity= `<p>Intensity: ${currentIntensity}</p>`
+    }
     $('#dicomInfo')[0].innerHTML = `
     <p>${metaDetails.patientName ?? ""}</p>
     <p>${metaDetails.patientAge ?? ""}</p>
     <p>${metaDetails.manufacturer ?? ""}</p>
     <p>${metaDetails.seriesDescription ?? ""}</p>
     <p>WW:${windowWidth} WC:${windowCenter}</p>
-    `;
+    ` + intensity;
 }
 
 function loadAndViewImage(imageData) {
@@ -113,6 +120,7 @@ function loadAndViewImage(imageData) {
         cornerstone.displayImage(element, image);
         cornerstone.setViewport(element, viewport[currentSeries])
         metaDetails = imageData.metaDetails;
+        currentIntensity = null;
         loadDicomInfo();
         if(!loaded){
             enableTool('Wwwc', 1);
@@ -807,7 +815,18 @@ function onImageRendered() {
     loadDicomInfo();
 }
 
+canvas.addEventListener('mousemove', function(event) {
+    let {x ,y } = cornerstone.pageToPixel(element, event.clientX, event.clientY);
+    let pixelValue = cornerstone.getPixels(element, x, y,1,1)[0];
 
+    if (!isNaN(pixelValue)){
+        currentIntensity = pixelValue;
+    }else{
+        currentIntensity = null;
+    }
+
+    loadDicomInfo();
+});
 
 
 window.onload = function(){

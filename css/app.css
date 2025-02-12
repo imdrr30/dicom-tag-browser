@@ -6,6 +6,7 @@
 
 #dicomInfo{
     position: absolute;
+    pointer-events: none;
 }
 
 #dicomInfo p{
