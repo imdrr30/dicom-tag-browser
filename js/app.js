@@ -367,6 +367,7 @@ function loadSeries(seriesId){
         dumpFile(images[seriesId][currentSlicePosition].file);
         if(!loaded){
             $('#seriesSelect').select2();
+            $("#unloadSeriesDiv").css("display", false);
         }
         loadAndViewImage(images[seriesId][currentSlicePosition]);
         let totalLength = images[seriesId].length;
@@ -866,6 +867,8 @@ function unloadSeries(){
         }else{
             setNewSeries(options[currentIndex-1].value);
         }
+        refreshSeries();
+
     }else if(totalSeries == 1){
         cornerstone.disable(element);
         cornerstone.enable(element);
@@ -880,13 +883,10 @@ function unloadSeries(){
         $("#dropZone").html(`<div style="margin-top:225px;margin-left: 10%;  user-select: none;"><h3><i class="bi bi-download"></i>   Drop DICOM files here</h3></div>`);
         $('#seriesSelect').select2('destroy'); 
         $("#seriesSelectDiv").html(`<select id="seriesSelect" onchange="setNewSeries(this.value)" style="display: none; width: 100%;" class="form-select"></select>`);
+        $("#unloadSeriesDiv").css("display", "none")
     }
 
     showNotification("Series "+ currentSeriesToRemove +" unloaded successfully");
-
-    if(currentSeries!=""){
-        refreshSeries();
-    }
 
 
 }
