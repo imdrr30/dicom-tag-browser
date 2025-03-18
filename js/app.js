@@ -367,7 +367,7 @@ function loadSeries(seriesId){
         dumpFile(images[seriesId][currentSlicePosition].file);
         if(!loaded){
             $('#seriesSelect').select2();
-            $("#unloadSeriesDiv").css("display", false);
+            $("#unloadSeriesDiv").css("display", "block");
         }
         loadAndViewImage(images[seriesId][currentSlicePosition]);
         let totalLength = images[seriesId].length;
