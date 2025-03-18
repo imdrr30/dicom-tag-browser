@@ -337,7 +337,7 @@ async function getFile(fileEntry) {
 }
 
 
-function refreshSeries(){
+function refreshSeries(triggerChange = true){
     let selectElement = $("#seriesSelect")[0]
     selectElement.innerHTML = "";
     let newHtml = "";
@@ -349,6 +349,9 @@ function refreshSeries(){
         newHtml += `</optgroup>`;
     }
     selectElement.innerHTML = newHtml;
+    if(triggerChange){
+        $(selectElement).val(currentSeries).trigger("change");
+    }
 }
 
 function setNewSeries(seriesId){
@@ -829,6 +832,59 @@ canvas.addEventListener('mousemove', function(event) {
 });
 
 
+function deleteSeriesFromStudy(seriesId){
+    for(let study in studyMapping){
+        let seriesIndex = studyMapping[study].series.indexOf(seriesId);
+        if(seriesIndex > -1){
+            studyMapping[study].series.splice(seriesIndex, 1);
+
+            if(studyMapping[study].series.length === 0){
+                delete studyMapping[study];
+            }
+            break;
+        }
+    }
+}
+
+function unloadSeries(){
+    let currentSeriesToRemove = currentSeries;
+    let selectElement = $("#seriesSelect")[0];
+
+    delete images[currentSeriesToRemove];
+    delete seriesSlicePosition[currentSeriesToRemove];
+    deleteSeriesFromStudy(currentSeriesToRemove)
+
+    let options = selectElement.options;
+
+    let totalSeries = options.length;
+    let selectedIndexOption = options.selectedIndex;
+
+    if(totalSeries > 1){
+        if(selectedIndexOption == 0){
+            
+            setNewSeries(options[1].value);
+        }else{
+            setNewSeries(options[currentIndex-1].value);
+        }
+    }else if(totalSeries == 1){
+        cornerstone.disable(element);
+        cornerstone.enable(element);
+        loaded = false;
+        $("#dicomInfo").html("");
+        $(".slider-div").css("display", "none");
+        $("#dropZone").html(`<div style="margin-top:225px;margin-left: 10%;  user-select: none;"><h3><i class="bi bi-download"></i>   Drop DICOM files here</h3></div>`);
+        $('#seriesSelect').select2('destroy'); 
+        $("#seriesSelectDiv").html(`<select id="seriesSelect" onchange="setNewSeries(this.value)" style="display: none; width: 100%;" class="form-select"></select>`);
+    }
+
+    showNotification("Series "+ currentSeriesToRemove +" unloaded successfully");
+
+    refreshSeries(false);
+
+
+}
+
+
 window.onload = function(){
     // Setup the dnd listeners.
     let body = document.getElementsByTagName('body')[0];
@@ -874,7 +930,6 @@ window.onload = function(){
                 if (selectedIndex > 0) {
                     let newValue = options.eq(selectedIndex - 1).val();
                     seriesSelect.val(newValue).trigger("change");
-                    setNewSeries(newValue);
                 }
                 break;
     
@@ -884,7 +939,6 @@ window.onload = function(){
                 if (selectedIndex < options.length - 1) {
                     let newValue = options.eq(selectedIndex + 1).val();
                     seriesSelect.val(newValue).trigger("change");
-                    setNewSeries(newValue);
                 }
                 break;
             case 'ArrowLeft':
