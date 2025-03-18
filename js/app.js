@@ -870,6 +870,11 @@ function unloadSeries(){
         cornerstone.disable(element);
         cornerstone.enable(element);
         loaded = false;
+        images = {};
+        currentSeries = "";
+        seriesSlicePosition = {};
+        metaDetails = {};
+        studyMapping = {};
         $("#dicomInfo").html("");
         $(".slider-div").css("display", "none");
         $("#dropZone").html(`<div style="margin-top:225px;margin-left: 10%;  user-select: none;"><h3><i class="bi bi-download"></i>   Drop DICOM files here</h3></div>`);
@@ -879,7 +884,9 @@ function unloadSeries(){
 
     showNotification("Series "+ currentSeriesToRemove +" unloaded successfully");
 
-    refreshSeries(false);
+    if(currentSeries!=""){
+        refreshSeries();
+    }
 
 
 }
